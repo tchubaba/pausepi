@@ -11,6 +11,9 @@ use Log;
 
 class PiHoleBoxRepository
 {
+    /**
+     * @var Collection<PiHoleBox>
+     */
     protected Collection $piHoleBoxes;
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\PiHoleBox;
+use App\Repositories\PiHoleBoxRepository;
 use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Client;
@@ -33,8 +34,11 @@ class PauseController extends BaseController
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    public function pausePiHoles(int $seconds = 30): View
-    {
+    public function pausePiHoles(
+        Client $client,
+        PiHoleBoxRepository $piHoleBoxRepository,
+        int $seconds = 30
+    ): View {
         $cacheData = Cache::get($this->cacheKey);
 
         if ($cacheData !== null) {
@@ -42,9 +46,8 @@ class PauseController extends BaseController
             $report    = $cacheData['report'];
             $allFailed = false;
         } else {
-            $piholeBoxes = $this->getPiHoleBoxes();
+            $piholeBoxes = $piHoleBoxRepository->getPiHoleBoxes();
             $seconds     = $seconds >= $this->minSec && $seconds <= 300 ? $seconds : $this->minSec;
-            $client      = new Client();
             $report      = [];
 
             $requests = function (Collection $piholeBoxes) use ($client, $seconds) {
@@ -53,8 +56,8 @@ class PauseController extends BaseController
                     $url = $box->getPauseUrl($seconds);
                     yield function () use ($client, $url) {
                         return $client->getAsync($url, [
-                            RequestOptions::TIMEOUT         => 5,
-                            RequestOptions::CONNECT_TIMEOUT => 5,
+                            RequestOptions::TIMEOUT         => 2,
+                            RequestOptions::CONNECT_TIMEOUT => 2,
                         ]);
                     };
                 }
@@ -123,34 +126,5 @@ class PauseController extends BaseController
             'report'    => $report,
             'allFailed' => $allFailed,
         ]);
-    }
-
-    /**
-     * @return Collection<PiHoleBox>
-     *
-     * @throws Exception
-     */
-    protected function getPiHoleBoxes(): Collection
-    {
-        $boxesConfig = config('pihole.boxes');
-        $piHoleBoxes = collect();
-
-        foreach ($boxesConfig as $box) {
-            try {
-                $piHoleBoxes->add(new PiHoleBox($box['name'], $box['api_key'], $box['ip']));
-            } catch (Exception $e) {
-                Log::warning(
-                    sprintf('Could not create pihole box: %s', $e->getMessage()),
-                );
-            }
-        }
-
-        if ($piHoleBoxes->isEmpty()) {
-            throw new Exception(
-                'Pihole boxes not properly configured! Ensure at least 1 Pihole box is configured correctly.'
-            );
-        }
-
-        return $piHoleBoxes;
     }
 }

@@ -8,13 +8,15 @@ use App\Models\PiHoleBox;
 use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Pool;
+use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Log;
 use Psr\SimpleCache\InvalidArgumentException;
-use Symfony\Component\HttpFoundation\Response;
 
 class PauseController extends BaseController
 {
@@ -41,27 +43,61 @@ class PauseController extends BaseController
             $allFailed = false;
         } else {
             $piholeBoxes = $this->getPiHoleBoxes();
+            $seconds     = $seconds >= $this->minSec && $seconds <= 300 ? $seconds : $this->minSec;
+            $client      = new Client();
+            $report      = [];
 
-            $seconds = $seconds >= $this->minSec && $seconds <= 300 ? $seconds : $this->minSec;
-            $client  = new Client();
-            $report  = [];
-
-            $piholeBoxes->each(function (PiHoleBox $box) use ($client, $seconds, &$report) {
-                try {
-                    $res = $client->request('GET', $this->getPauseUrl($box, $seconds), [
-                        RequestOptions::TIMEOUT         => 5,
-                        RequestOptions::CONNECT_TIMEOUT => 5,
-                    ]);
-                    $callResult = $res->getStatusCode() === Response::HTTP_OK;
-                } catch (Exception $e) {
-                    $callResult = false;
+            $requests = function (Collection $piholeBoxes) use ($client, $seconds) {
+                /** @var PiHoleBox $box */
+                foreach ($piholeBoxes as $box) {
+                    $url = $box->getPauseUrl($seconds);
+                    yield function () use ($client, $url) {
+                        return $client->getAsync($url, [
+                            RequestOptions::TIMEOUT         => 5,
+                            RequestOptions::CONNECT_TIMEOUT => 5,
+                        ]);
+                    };
                 }
+            };
 
-                $report[$box->name] = [
-                    'ip'     => $box->ipAddress,
-                    'result' => $callResult,
-                ];
-            });
+            $pool = new Pool($client, $requests($piholeBoxes), [
+                'concurrency' => count($piholeBoxes),
+                'fulfilled'   => function (Response $response, int $index) use ($seconds, $piholeBoxes, &$report) {
+                    /** @var PiHoleBox $box */
+                    $box      = $piholeBoxes[$index];
+                    $contents = json_decode($response->getBody()->getContents());
+
+                    $report[$box->name] = [
+                        'ip'     => $box->ipAddress,
+                        'result' => ! empty($contents)
+                            && property_exists($contents, 'status')
+                            && $contents->status === 'disabled',
+                    ];
+                },
+                'rejected' => function ($reason, $index) use ($seconds, $piholeBoxes, &$report) {
+                    $box = $piholeBoxes[$index];
+                    if ($reason instanceof RequestException && $reason->hasResponse()) {
+                        $errorMsg = sprintf('Got status code %', $reason->getResponse()->getStatusCode());
+                    } else {
+                        $errorMsg = $reason->getMessage();
+                    }
+
+                    $report[$box->name] = [
+                        'ip'     => $box->ipAddress,
+                        'result' => false,
+                    ];
+
+                    Log::warning(sprintf(
+                        'Could not pause Pi-Hole box \'%s\': %s',
+                        $box->name,
+                        $errorMsg,
+                    ));
+                },
+            ]);
+
+            $requestTime = Carbon::now();
+            $promise     = $pool->promise();
+            $promise->wait();
 
             $allFailed = true;
             foreach ($report as $result) {
@@ -70,6 +106,8 @@ class PauseController extends BaseController
                     break;
                 }
             }
+
+            $seconds = $seconds - (int) ($requestTime->diffInSeconds(Carbon::now()));
 
             if ( ! $allFailed) {
                 Cache::set($this->cacheKey, [
@@ -85,16 +123,6 @@ class PauseController extends BaseController
             'report'    => $report,
             'allFailed' => $allFailed,
         ]);
-    }
-
-    protected function getPauseUrl(PiHoleBox $box, int $timeout): string
-    {
-        return sprintf(
-            config('pihole.pause_url_template'),
-            $box->ipAddress,
-            $timeout + 2,
-            $box->apiKey,
-        );
     }
 
     /**

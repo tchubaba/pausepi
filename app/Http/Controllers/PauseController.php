@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\PauseResultStatus;
+use App\Models\PauseResult;
 use App\Models\PiHoleBox;
 use App\Repositories\PiHoleBoxRepository;
 use Carbon\Carbon;
@@ -37,7 +39,7 @@ class PauseController extends BaseController
     public function pausePiHoles(
         Client $client,
         PiHoleBoxRepository $piHoleBoxRepository,
-        int $seconds = 30
+        int $seconds = 30,
     ): View {
         $cacheData = Cache::get($this->cacheKey);
 
@@ -70,12 +72,23 @@ class PauseController extends BaseController
                     $box      = $piholeBoxes[$index];
                     $contents = json_decode($response->getBody()->getContents());
 
-                    $report[$box->name] = [
-                        'ip'     => $box->ipAddress,
-                        'result' => ! empty($contents)
-                            && property_exists($contents, 'status')
-                            && $contents->status === 'disabled',
-                    ];
+                    if ( ! empty($contents)
+                        && property_exists($contents, 'status')
+                        && $contents->status === 'disabled'
+                    ) {
+                        $result = PauseResultStatus::SUCCESS;
+                    } else {
+                        $result = PauseResultStatus::INVALID_RESPONSE;
+                        Log::warning(
+                            sprintf(
+                                'Did not receive the expected response from the Pi-hole box at %s. Is the API'
+                                . ' key correct?',
+                                $box->ipAddress,
+                            )
+                        );
+                    }
+
+                    $report[$index] = new PauseResult($box, $result, Carbon::now());
                 },
                 'rejected' => function ($reason, $index) use ($seconds, $piholeBoxes, &$report) {
                     $box = $piholeBoxes[$index];
@@ -85,10 +98,7 @@ class PauseController extends BaseController
                         $errorMsg = $reason->getMessage();
                     }
 
-                    $report[$box->name] = [
-                        'ip'     => $box->ipAddress,
-                        'result' => false,
-                    ];
+                    $report[$index] = new PauseResult($box, PauseResultStatus::TIMEOUT, Carbon::now());
 
                     Log::warning(sprintf(
                         'Could not pause Pi-Hole box \'%s\': %s',
@@ -98,18 +108,20 @@ class PauseController extends BaseController
                 },
             ]);
 
-            $requestTime = Carbon::now();
             $promise     = $pool->promise();
+            $requestTime = Carbon::now();
             $promise->wait();
 
             $allFailed = true;
+            /** @var PauseResult $result */
             foreach ($report as $result) {
-                if ($result['result'] === true) {
+                if ($result->status === PauseResultStatus::SUCCESS) {
                     $allFailed = false;
                     break;
                 }
             }
 
+            ksort($report);
             $seconds = $seconds - (int) ($requestTime->diffInSeconds(Carbon::now()));
 
             if ( ! $allFailed) {

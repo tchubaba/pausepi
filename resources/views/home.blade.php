@@ -1,10 +1,13 @@
+@php use App\Enums\PauseResultStatus; @endphp
 @extends('main')
 @section('content')
     @if (count($report) > 0)
-        <h1 id="message">Hurry, do your thing! Ad blocking will resume in <span id="time">{{ $seconds }}</span> seconds :)</h1>
+        <h1 id="message">Hurry, do your thing! Ad blocking will resume in <span id="time">{{ $seconds }}</span> seconds
+            :)</h1>
         <ul>
-            @foreach ($report as $name => $result)
-                <li>{{ $name }} Pi-hole ({{ $result['ip'] }}) status: <span class="status" style="{{ $result['result'] ? '' : 'color: red;' }}">{{ $result['result'] ? 'Ad Blocking Paused' : 'Could not disable! (Blocking may be active...)' }}</span></li>
+            @foreach ($report as $result)
+                <li>{{ $result->piholeBox->name }} Pi-hole ({{ $result->piholeBox->ipAddress }}) status: <span class="status" style="{{ $result->status === PauseResultStatus::SUCCESS ? '' : 'color: red;' }}">{{ $result->status === PauseResultStatus::SUCCESS ? 'Ad Blocking Paused' : 'Could not pause! (Ad blocking may be active...)' }}</span>
+                </li>
             @endforeach
         </ul>
         <button id="again" type="button" disabled>Pause Again</button>
@@ -50,6 +53,6 @@
                 $('#again').prop('disabled', false);
                 $('#message').text('Ad blocking has resumed. Please pause again if you need more time.')
             }
-    }, 1000);
-}
+        }, 1000);
+    }
 @endsection

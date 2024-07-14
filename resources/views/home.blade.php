@@ -6,7 +6,7 @@
             :)</h1>
         <ul>
             @foreach ($report as $result)
-                <li>{{ $result->piholeBox->name }} Pi-hole ({{ $result->piholeBox->ipAddress }}) status: <span class="status" style="{{ $result->status === PauseResultStatus::SUCCESS ? '' : 'color: red;' }}">{{ $result->status === PauseResultStatus::SUCCESS ? 'Ad Blocking Paused' : 'Could not pause! (Ad blocking may be active...)' }}</span>
+                <li>{{ $result->piholeBox->name }} Pi-hole ({{ $result->piholeBox->hostname }}) status: <span class="status" style="{{ $result->status === PauseResultStatus::SUCCESS ? '' : 'color: red;' }}">{{ $result->status === PauseResultStatus::SUCCESS ? 'Ad Blocking Paused' : 'Could not pause! (Ad blocking may be active...)' }}</span>
                 </li>
             @endforeach
         </ul>

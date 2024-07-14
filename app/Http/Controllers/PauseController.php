@@ -48,7 +48,6 @@ class PauseController extends BaseController
             $report    = $cacheData['report'];
             $allFailed = false;
         } else {
-            $piholeBoxes = $piHoleBoxRepository->getPiHoleBoxes();
             $seconds     = $seconds >= $this->minSec && $seconds <= 300 ? $seconds : $this->minSec;
             $report      = [];
 
@@ -65,7 +64,8 @@ class PauseController extends BaseController
                 }
             };
 
-            $pool = new Pool($client, $requests($piholeBoxes), [
+            $piholeBoxes = $piHoleBoxRepository->getPiHoleBoxes();
+            $pool        = new Pool($client, $requests($piholeBoxes), [
                 'concurrency' => count($piholeBoxes),
                 'fulfilled'   => function (Response $response, int $index) use ($seconds, $piholeBoxes, &$report) {
                     /** @var PiHoleBox $box */

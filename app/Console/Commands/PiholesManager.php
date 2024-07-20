@@ -6,7 +6,6 @@ use App\Models\PiHoleBox;
 use App\Repositories\PiHoleBoxRepository;
 use Exception;
 use Illuminate\Console\Command;
-
 use Log;
 
 use function Laravel\Prompts\text;

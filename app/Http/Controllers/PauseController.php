@@ -91,6 +91,7 @@ class PauseController extends BaseController
                     $report[$index] = new PauseResult($box, $result, Carbon::now());
                 },
                 'rejected' => function ($reason, $index) use ($seconds, $piholeBoxes, &$report) {
+                    /** @var PiHoleBox $box */
                     $box = $piholeBoxes[$index];
                     if ($reason instanceof RequestException && $reason->hasResponse()) {
                         $errorMsg = sprintf('Got status code %', $reason->getResponse()->getStatusCode());

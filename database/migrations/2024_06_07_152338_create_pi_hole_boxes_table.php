@@ -15,9 +15,9 @@ return new class () extends Migration {
     {
         Schema::create($this->table, function (Blueprint $table) {
             $table->id();
-            $table->string('name', 16)->unique();
+            $table->string('name', 16)->unique()->collation('NOCASE');
             $table->string('api_key', 64);
-            $table->string('hostname')->unique();
+            $table->string('hostname')->unique()->collation('NOCASE');
             $table->string('description', 100)->nullable();
             $table->timestamps();
         });

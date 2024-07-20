@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\ManagerOptions;
 use App\Models\PiHoleBox;
 use App\Repositories\PiHoleBoxRepository;
 use Exception;
@@ -32,6 +33,8 @@ class PiholesManager extends Command
      */
     protected $description = 'Command description';
 
+    protected array $managerOptions;
+
     protected PiHoleBoxRepository $piHoleBoxRepository;
 
     public function __construct(PiHoleBoxRepository $piHoleBoxRepository)
@@ -39,6 +42,7 @@ class PiholesManager extends Command
         parent::__construct();
 
         $this->piHoleBoxRepository = $piHoleBoxRepository;
+        $this->managerOptions      = array_column(ManagerOptions::cases(), 'value');
     }
 
     /**
@@ -51,11 +55,11 @@ class PiholesManager extends Command
         do {
             $option = select(
                 'What would you like to do?',
-                ['View Pi-holes', 'Add Pi-hole', 'Edit Pi-hole', 'Remove Pi-hole', 'Exit']
+                $this->managerOptions
             );
 
             switch ($option) {
-                case 'View Pi-holes':
+                case ManagerOptions::VIEW->value:
                     $piHoles = PiHoleBox::select(['name', 'hostname', 'api_key', 'description'])->get();
 
                     if ($piHoles->isEmpty()) {
@@ -66,8 +70,8 @@ class PiholesManager extends Command
                     }
 
                     break;
-                case 'Add Pi-hole':
-                    info('Please enter new the Pi-hole\'s information:');
+                case ManagerOptions::ADD->value:
+                    info('Please enter the new Pi-hole\'s information:');
                     $name = text(
                         label: 'Name',
                         required: 'A name is required',
@@ -94,7 +98,13 @@ class PiholesManager extends Command
                         },
                     );
 
-                    $description = text('Description');
+                    $description = text(
+                        label: 'Description',
+                        validate: fn (string $value) => match (true) {
+                            strlen($value) > 100 => 'The description must not be greater than 100 characters long',
+                            default              => null,
+                        }
+                    );
 
                     info('New Pi-Hole information:');
                     table(['Name', 'Hostname', 'API Token', 'Description'], [[$name, $hostname, $apiKey, $description]]);
@@ -124,7 +134,7 @@ class PiholesManager extends Command
                         warning('Cancelled.');
                     }
                     break;
-                case 'Edit Pi-hole':
+                case ManagerOptions::EDIT->value:
                     $piHoles = [];
                     /** @var PiHoleBox $piholeBox */
                     foreach ($this->piHoleBoxRepository->getPiholeBoxes() as $piholeBox) {
@@ -179,6 +189,10 @@ class PiholesManager extends Command
                                 $description = text(
                                     label: 'Description',
                                     default: $piholeBox->description,
+                                    validate: fn (string $value) => match (true) {
+                                        strlen($value) > 100 => 'The description must not be greater than 100 characters long',
+                                        default              => null,
+                                    }
                                 );
 
                                 info('Updated Pi-Hole information:');
@@ -208,7 +222,7 @@ class PiholesManager extends Command
                         }
                     }
                     break;
-                case 'Remove Pi-hole':
+                case ManagerOptions::REMOVE->value:
                     $piHoles = [];
                     /** @var PiHoleBox $piholeBox */
                     foreach ($this->piHoleBoxRepository->getPiholeBoxes() as $piholeBox) {
@@ -246,14 +260,16 @@ class PiholesManager extends Command
                                         error(sprintf('An error occurred and the Pi-hole could not be removed: %s', $e->getMessage()));
                                     }
                                 }
+                            } else {
+                                warning('Cancelled.');
                             }
                         }
                     }
                     break;
-                case 'Exit':
+                case ManagerOptions::EXIT->value:
                 default:
                     info('Exited Pihole manager');
             }
-        } while ($option !== 'Exit');
+        } while ($option !== ManagerOptions::EXIT->value);
     }
 }

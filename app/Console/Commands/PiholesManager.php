@@ -51,7 +51,7 @@ class PiholesManager extends Command
         do {
             $option = select(
                 'What would you like to do?',
-                ['View Pi-holes', 'Add Pi-hole', 'Remove Pi-hole', 'Exit']
+                ['View Pi-holes', 'Add Pi-hole', 'Edit Pi-hole', 'Remove Pi-hole', 'Exit']
             );
 
             switch ($option) {
@@ -62,7 +62,7 @@ class PiholesManager extends Command
                         warning('No Pi-holes have been added yet. Please add one.');
                     } else {
                         info('These are the currently configured Pi-holes:');
-                        table(['Name', 'Hostname', 'API Key', 'Description'], $piHoles->toArray());
+                        table(['Name', 'Hostname', 'API Token', 'Description'], $piHoles->toArray());
                     }
 
                     break;
@@ -72,19 +72,22 @@ class PiholesManager extends Command
                         label: 'Name',
                         required: 'A name is required',
                         validate: fn (string $value) => match (true) {
-                            strlen($value) < 3 => 'The name must be at least 3 characters long',
-                            default            => null,
+                            strlen($value) < 3  => 'The name must be at least 3 characters long',
+                            strlen($value) > 16 => 'The name must not be greater than 16 characters long',
+                            default             => null,
                         },
                     );
 
                     $hostname = text(
                         label: 'Hostname',
-                        required: 'A hostname is required',
+                        placeholder: 'An IP address or a hostname like mydomain.com',
+                        required: 'A hostname is required'
                     );
 
                     $apiKey = text(
-                        label: 'API Key',
-                        required: 'A api key is required',
+                        label: 'API Token',
+                        placeholder: 'Can be obtained from Settings > API > Show API Token',
+                        required: 'An api token is required',
                         validate: fn (string $value) => match (true) {
                             strlen($value) !== 64 => 'The api key must be 64 characters long',
                             default               => null,
@@ -94,7 +97,7 @@ class PiholesManager extends Command
                     $description = text('Description');
 
                     info('New Pi-Hole information:');
-                    table(['Name', 'Hostname', 'API Key', 'Description'], [[$name, $hostname, $apiKey, $description]]);
+                    table(['Name', 'Hostname', 'API Token', 'Description'], [[$name, $hostname, $apiKey, $description]]);
 
                     $confirmed = confirm(
                         label: 'Does the information look correct?',
@@ -121,6 +124,90 @@ class PiholesManager extends Command
                         warning('Cancelled.');
                     }
                     break;
+                case 'Edit Pi-hole':
+                    $piHoles = [];
+                    /** @var PiHoleBox $piholeBox */
+                    foreach ($this->piHoleBoxRepository->getPiholeBoxes() as $piholeBox) {
+                        $piHoles[] = $piholeBox->name;
+                    }
+
+                    if (empty($piholeBox)) {
+                        warning('No Pi-holes have been added yet. Please add one.');
+                    } else {
+                        $piHoles[] = 'Cancel';
+                        $option    = select(
+                            'Which Pi-Hole would you like to edit?',
+                            $piHoles
+                        );
+
+                        if ($option === 'Cancel') {
+                            warning('Cancelled.');
+                        } else {
+                            $piholeBox = PiHoleBox::where('name', $option)->first();
+
+                            if ($piholeBox === null) {
+                                error('An error occurred and the selected Pi-hole box could not be found!');
+                            } else {
+                                info(sprintf('Please update %s\'s information', $piholeBox->name));
+
+                                $name = text(
+                                    label: 'Name',
+                                    default: $piholeBox->name,
+                                    validate: fn (string $value) => match (true) {
+                                        strlen($value) < 3  => 'The name must be at least 3 characters long',
+                                        strlen($value) > 16 => 'The name must not be greater than 16 characters long',
+                                        default             => null,
+                                    },
+                                );
+
+                                $hostname = text(
+                                    label: 'Hostname',
+                                    default: $piholeBox->hostname,
+                                    required: 'A hostname is required'
+                                );
+
+                                $apiKey = text(
+                                    label: 'API Token',
+                                    default: $piholeBox->api_key,
+                                    required: 'An api token is required',
+                                    validate: fn (string $value) => match (true) {
+                                        strlen($value) !== 64 => 'The api key must be 64 characters long',
+                                        default               => null,
+                                    },
+                                );
+
+                                $description = text(
+                                    label: 'Description',
+                                    default: $piholeBox->description,
+                                );
+
+                                info('Updated Pi-Hole information:');
+                                table(['Name', 'Hostname', 'API Token', 'Description'], [[$name, $hostname, $apiKey, $description]]);
+
+                                $confirmed = confirm(
+                                    label: 'Does the information look correct?',
+                                    default: true,
+                                    yes: 'Yes, update Pi-hole',
+                                    no: 'No, cancel updating',
+                                );
+
+                                if ($confirmed) {
+                                    try {
+                                        $piholeBox->name        = $name;
+                                        $piholeBox->hostname    = $hostname;
+                                        $piholeBox->api_key     = $apiKey;
+                                        $piholeBox->description = $description;
+                                        $piholeBox->save();
+                                        info(sprintf('Pi-hole %s updated successfully', $name));
+                                    } catch (Exception $e) {
+                                        error('An error occurred and the Pi-hole could not be updated. Please ensure that the name and hostname are unique. See logs for further details.');
+                                        Log::error($e->getMessage());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
                 case 'Remove Pi-hole':
                     $piHoles = [];
                     /** @var PiHoleBox $piholeBox */
@@ -128,32 +215,36 @@ class PiholesManager extends Command
                         $piHoles[] = $piholeBox->name;
                     }
 
-                    $piHoles[] = 'Cancel';
-                    $option    = select(
-                        'Which Pi-Hole would you like to remove?',
-                        $piHoles
-                    );
-
-                    if ($option === 'Cancel') {
-                        warning('Cancelled.');
+                    if (empty($piHoles)) {
+                        warning('No Pi-holes have been added yet. Please add one.');
                     } else {
-                        $confirmed = confirm(
-                            label: sprintf('Remove Pi-hole %s. Are you sure?', $option),
-                            default: false,
-                            yes: 'Yes, remove pihole',
-                            no: 'No, do not remove',
+                        $piHoles[] = 'Cancel';
+                        $option    = select(
+                            'Which Pi-Hole would you like to remove?',
+                            $piHoles
                         );
 
-                        if ($confirmed) {
-                            $piHoleBox = PiHoleBox::where('name', $option)->first();
-                            if ($piHoleBox === null) {
-                                error(sprintf('Could not delete Pi-hole %s. It was not found in the database', $option));
-                            } else {
-                                try {
-                                    $piHoleBox->delete();
-                                    info(sprintf('Pihole %s removed successfully', $option));
-                                } catch (Exception $e) {
-                                    error(sprintf('An error occurred and the Pi-hole could not be removed: %s', $e->getMessage()));
+                        if ($option === 'Cancel') {
+                            warning('Cancelled.');
+                        } else {
+                            $confirmed = confirm(
+                                label: sprintf('Remove Pi-hole %s. Are you sure?', $option),
+                                default: false,
+                                yes: 'Yes, remove pihole',
+                                no: 'No, do not remove',
+                            );
+
+                            if ($confirmed) {
+                                $piHoleBox = PiHoleBox::where('name', $option)->first();
+                                if ($piHoleBox === null) {
+                                    error(sprintf('Could not delete Pi-hole %s. It was not found in the database', $option));
+                                } else {
+                                    try {
+                                        $piHoleBox->delete();
+                                        info(sprintf('Pihole %s removed successfully', $option));
+                                    } catch (Exception $e) {
+                                        error(sprintf('An error occurred and the Pi-hole could not be removed: %s', $e->getMessage()));
+                                    }
                                 }
                             }
                         }

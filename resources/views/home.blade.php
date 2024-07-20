@@ -13,6 +13,7 @@
         <button id="again" type="button" disabled>Pause Again</button>
     @else
         <h1 style="color:red">Could not find any ad-blockers to pause :(</h1>
+        Please add a Pi-hole ad-blocker via the manager. Run the "php artisan pihole:manager" command at the root of the project.
     @endif
 @endsection
 @section('javascript')
@@ -29,7 +30,7 @@
         if (allFailed) {
             againButton.prop('disabled', false);
             againButton.text('Try again');
-            $('#message').text('OH NO! We couldn\'t disable any of the ad blockers! Please try again or tell Dad about it. Sorry :(');
+            $('#message').text('OH NO! We couldn\'t disable any of the ad blockers! :( Please ensure they are running and their information (hostname, API Token) are configured correctly.');
         } else {
             againButton.prop('disabled', true);
             startTimer(seconds, display);

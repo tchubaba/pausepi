@@ -56,7 +56,8 @@ only the minimum amount of time pausing will last but also the default.
 
 Once all is done, all you have to is point your browser to the server running the application. This will show you the
 current status of pausing, which Pi-holes were successful in being paused and a timer indicating when ad blocking will
-resume.
+resume. Share the URL for your deployment with members of your household and they will also be able to conveniently
+pause ad blocking as needed.
 
 ## Contributing
 If you find this useful but think it can be improved, feel free to offer your suggestions. You may also issue a PR

@@ -1,11 +1,12 @@
 # Pi-hole Pauser
 
 ## About
-The Pi-hole ad blocker is great at doing what it's supposed to: block ads. However sometimes, depending on what you have
-on your block list, it will also disrupt some online services, like video streaming ones. Of course you can login to
-your Pi-hole dashboard and disable it from there. But it is a hassle, especially if you have more than one configured in
-your network. It's also inconvenient for other users who may not have access to the Pi-hole(s) dashboard. Here comes
-Pi-hole Pauser. It is a tool which allows you to temporarily pause Pi-holes ad blocking from a single web
+The Pi-hole ad blocker is great at doing what it's supposed to: block ads network-wide. However, sometimes, depending on
+what you have on your block list, it will also disrupt some online services, like video streaming or other web pages, which will simply not 
+load. Of course, you can login to your Pi-hole admin dashboard and disable it from there. But it is a hassle, especially if you have more than one configured in
+your network. It's also inconvenient for other users who may not have access to the Pi-hole(s) dashboard.
+
+Enter Pi-hole Pauser. It is a tool which allows you to temporarily pause Pi-holes ad blocking from a single web
 page. It works with one or more Pi-holes and will simultaneously pause all of them. By default, it will pause the
 ad blockers for 30 seconds, allowing you to load that video stream or open that page that is being blocked.
 
@@ -28,8 +29,8 @@ php artisan migrate
 
 ## Adding Pi-holes
 
-Once installed, you will need to add some information about your Pi-holes in order for the app to be able to communicate
-with them. You will need the Pi-hole's IP address and its API Token. The API token can be obtained from the Pi-hole's
+Once installed, you will need to add some information about the Pi-holes in your network in order for the app to be able to communicate
+with them. You will need the Pi-holes' IP addresses and API Tokens. The API token can be obtained from the Pi-hole's
 admin dashboard under Settings > API > Show API Token. To configure them, run the included Pi-hole manager from the
 command line:
 ```shell

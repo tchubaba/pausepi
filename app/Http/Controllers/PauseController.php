@@ -27,9 +27,12 @@ class PauseController extends BaseController
 
     protected int $minSec;
 
+    protected int $maxSec;
+
     public function __construct()
     {
         $this->minSec = config('pihole.min_timeout_seconds');
+        $this->maxSec = config('pihole.max_timeout_seconds');
     }
 
     /**
@@ -48,7 +51,7 @@ class PauseController extends BaseController
             $report    = $cacheData['report'];
             $allFailed = false;
         } else {
-            $seconds     = $seconds >= $this->minSec && $seconds <= 300 ? $seconds : $this->minSec;
+            $seconds     = $seconds >= $this->minSec && $seconds <= $this->maxSec ? $seconds : $this->minSec;
             $report      = [];
 
             $requests = function (Collection $piholeBoxes) use ($client, $seconds) {

@@ -1,66 +1,63 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Pi-hole Pauser
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## About
+The Pi-hole ad blocker is great at doing what it's supposed to: block ads. However sometimes, depending on what you have
+on your block list, it will also disrupt some online services, like video streaming ones. Of course you can login to
+your Pi-hole dashboard and disable it from there. But it is a hassle, especially if you have more than one configured in
+your network. It's also inconvenient for other users who may not have access to the Pi-hole(s) dashboard. Here comes
+Pi-hole Pauser. It is a tool which allows you to temporarily pause Pi-holes ad blocking from a single web
+page. It works with one ore more Pi-holes and will simultaneously pause all of them. By default, it will pause the
+ad blockers for 30 seconds, allowing you to load that video stream or open that page that is being blocked.
 
-## About Laravel
+## Installation
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+The Pi-hole Pauser is a Laravel 11 application and requires PHP >= 8.3. Also all PHP extensions as described on their
+[documentation](https://laravel.com/docs/11.x/deployment#server-requirements).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Installation is as simple as cloning the repository where you want to host it, pointing your httpd document root to the 
+`/public` folder, creating an .env file and generating the encryption key. You will also need to run the migration for
+the required SQLite database tables to be created.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```shell
+cd /path/to/piholepauser
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+```
 
-## Learning Laravel
+## Adding Pi-holes
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Once installed, you will need to add some information about your Pi-holes in order for the app to be able to communicate
+with them. You will need the Pi-hole's IP address and its API Token. The API token can be obtained from the Pi-hole's
+admin dashboard under Settings > API > Show API Token. To configure them, run the included Pi-hole manager from the
+command line:
+```shell
+php artisan pihole:manager
+```
+From here you will be able to view configured Pi-holes, as well as add, edit or remove them. Note that if you ever
+change the Pi-hole admin password, the API Token will change as well and you will need to re-run this manager to update
+it.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Pause time
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+By default, Pi-hole Pauser will pause ad blocking for 30 seconds. This can be changed by adding a parameter to the URL
+of the site, indicating how much time the pause should last for. For example, if you'd like it to pause for 60 seconds,
+you add `60` to the URL, as such:
+```
+http://pyholepauserurl/60
+```
+By default, you can pause to a maximum of 300 seconds (5 minutes). 
 
-## Laravel Sponsors
+If you would like to change these defaults, you can do so by editing the `.env` file and changing the values of the
+`PIHOLE_MIN_TIMEOUT_SECONDS` and `PIHOLE_MAX_TIMEOUT_SECONDS` config entries. The `PIHOLE_MIN_TIMEOUT_SECONDS` is not
+only the minimum amount of time pausing will last but also the default.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Enjoy ad blocker pausing
 
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Once all is done, all you have to is point your browser to the server running the application. This will show you the
+current status of pausing, which Pi-holes were successful in being paused and a timer indicating when ad blocking will
+resume.
 
 ## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+If you find this useful but think it can be improved, feel free to offer your suggestions. You may also issue a PR
+directly for new features or bug fixes. 

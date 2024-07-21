@@ -74,6 +74,7 @@ class PiholesManager extends Command
                     info('Please enter the new Pi-hole\'s information:');
                     $name = text(
                         label: 'Name',
+                        placeholder: 'A unique name describing your Pi-hole',
                         required: 'A name is required',
                         validate: fn (string $value) => match (true) {
                             strlen($value) < 3  => 'The name must be at least 3 characters long',
@@ -100,6 +101,7 @@ class PiholesManager extends Command
 
                     $description = text(
                         label: 'Description',
+                        placeholder: 'A description of your Pi-hole. Optional.',
                         validate: fn (string $value) => match (true) {
                             strlen($value) > 100 => 'The description must not be greater than 100 characters long',
                             default              => null,

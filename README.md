@@ -6,7 +6,7 @@ on your block list, it will also disrupt some online services, like video stream
 your Pi-hole dashboard and disable it from there. But it is a hassle, especially if you have more than one configured in
 your network. It's also inconvenient for other users who may not have access to the Pi-hole(s) dashboard. Here comes
 Pi-hole Pauser. It is a tool which allows you to temporarily pause Pi-holes ad blocking from a single web
-page. It works with one ore more Pi-holes and will simultaneously pause all of them. By default, it will pause the
+page. It works with one or more Pi-holes and will simultaneously pause all of them. By default, it will pause the
 ad blockers for 30 seconds, allowing you to load that video stream or open that page that is being blocked.
 
 ## Installation

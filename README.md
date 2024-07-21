@@ -11,8 +11,9 @@ ad blockers for 30 seconds, allowing you to load that video stream or open that 
 
 ## Installation
 
-The Pi-hole Pauser is a Laravel 11 application and requires PHP >= 8.3. Also all PHP extensions as described on their
-[documentation](https://laravel.com/docs/11.x/deployment#server-requirements).
+The Pi-hole Pauser is a Laravel 11 application and requires PHP >= 8.3, as well as all PHP extensions as described on
+their [documentation](https://laravel.com/docs/11.x/deployment#server-requirements). Also be sure to install the PHP
+sqlite3 extension.
 
 Installation is as simple as cloning the repository where you want to host it, pointing your httpd document root to the 
 `/public` folder, creating an .env file and generating the encryption key. You will also need to run the migration for

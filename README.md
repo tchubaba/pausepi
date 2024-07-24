@@ -15,8 +15,7 @@ To address these issues, we introduce Pi-hole Pauser, a tool that allows you to 
 
 ## Installation
 
-To install Pi-hole Pauser, follow these steps:
-
+The Pi-hole Pauser is a Laravel 11 application. To install it, follow these steps:
 
 * Clone this repository to a directory of your choice.
 * Set up a PHP 8.3+ environment with the required extensions and server configuration (see [Laravel's documentation](https://laravel.com/docs/11.x/deployment#server-requirements)).

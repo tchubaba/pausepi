@@ -1,25 +1,26 @@
 # Pi-hole Pauser
 
-## About
-The Pi-hole ad blocker is great at doing what it's supposed to: block ads network-wide. However, sometimes, depending on
-what you have on your block list, it will also disrupt some online services, like video streaming or other web pages, which will simply not 
-load. Of course, you can login to your Pi-hole admin dashboard and disable it from there. But it is a hassle, especially if you have more than one configured in
-your network. It's also inconvenient for other users who may not have access to the Pi-hole(s) dashboard.
+## Overview
 
-Enter Pi-hole Pauser. It is a tool which allows you to temporarily pause Pi-holes ad blocking from a single web
-page. It works with one or more Pi-holes and will simultaneously pause all of them. By default, it will pause the
-ad blockers for 30 seconds, allowing you to load that video stream or open that page that is being blocked.
+The Pi-hole ad blocker is an effective tool for blocking ads network-wide, but it can sometimes interfere with online services like video streaming or opening some web pages. To address this issue, we introduce Pi-hole Pauser, a Laravel 11 application that allows you to temporarily pause Pi-hole's ad blocking from a single web page.
+
+## Features
+
+* Pause ad blocking for one or more Pi-holes simultaneously from a single web page
+* Adjustable pause duration (default: 30 seconds)
+* Supports multiple Pi-holes
+* Configurable minimum and maximum pause durations via environment variables
+* Pause duration can be adjusted via URL parameter.
 
 ## Installation
 
-The Pi-hole Pauser is a Laravel 11 application and requires PHP >= 8.3, as well as all PHP extensions as described on
-their [documentation](https://laravel.com/docs/11.x/deployment#server-requirements). Also be sure to install the PHP
-sqlite3 extension.
+To install Pi-hole Pauser, follow these steps:
 
-Installation is as simple as cloning the repository where you want to host it, pointing your httpd document root to the 
-`/public` folder, creating an .env file and generating the encryption key. You will also need to run the migration for
-the required SQLite database tables to be created.
 
+* Clone the repository to a directory of your choice.
+* Set up a PHP 8.3+ environment with the required extensions and server configuration (see [Laravel's documentation](https://laravel.com/docs/11.x/deployment#server-requirements)).
+* Install the PHP `sqlite3` extension.
+* Run the following commands:
 ```shell
 cd /path/to/piholepauser
 cp .env.example .env
@@ -27,40 +28,38 @@ php artisan key:generate
 php artisan migrate
 ```
 
-## Adding Pi-holes
+## Configuration
 
-Once installed, you will need to add some information about the Pi-holes in your network in order for the app to be able to communicate
-with them. You will need the Pi-holes' IP addresses and API Tokens. The API token can be obtained from the Pi-hole's
-admin dashboard under Settings > API > Show API Token. To configure them, run the included Pi-hole manager from the
-command line:
+To add Pi-holes to your network, run the included Pi-hole manager from the command line:
+
 ```shell
 php artisan pihole:manager
 ```
-From here you will be able to view configured Pi-holes, as well as add, edit or remove them. Note that if you ever
-change the Pi-hole admin password, the API Token will change as well and you will need to re-run this manager to update
-it.
 
-## Pause time
+This tool allows you to view and manage configured Pi-holes, as well as add, edit, or remove them.
 
-By default, Pi-hole Pauser will pause ad blocking for 30 seconds. This can be changed by adding a parameter to the URL
-of the site, indicating how much time the pause should last for. For example, if you'd like it to pause for 60 seconds,
-you add `60` to the URL, as such:
+## Usage
+
+Once installed and configured, pause ad blocking by visiting your web server's URL in your browser. Pi-Hole Pauser will attempt to pause all configured Pi-holes simultaneously. From there, you will also:
+
+* View the current status of pausing, including which Pi-holes were successfully paused
+* See a timer indicating when ad blocking will resume
+
+
+You can also adjust the pause duration by adding a parameter to the URL. For example, to pause for 60 seconds, you would add 60 to the URL: http://piholepauserurl/60. The default maximum pause duration is 5 minutes (300 seconds), but this can be adjusted via environment variables if needed.
+
+To adjust the minimum and maximum pause durations, update the following values in your .env file:
+
+* PIHOLE_MIN_TIMEOUT_SECONDS: sets the minimum pause duration in seconds (also serves as the default) and
+* PIHOLE_MAX_TIMEOUT_SECONDS: sets the maximum pause duration in seconds
+
+For example, to set a minimum pause duration of 15 seconds and a maximum duration of 10 minutes, you would update your .env file as follows:
+
+```dotenv
+# Pi-hole Pauser specific config
+PIHOLE_MIN_TIMEOUT_SECONDS=15
+PIHOLE_MAX_TIMEOUT_SECONDS=600
 ```
-http://pyholepauserurl/60
-```
-By default, you can pause to a maximum of 300 seconds (5 minutes). 
-
-If you would like to change these defaults, you can do so by editing the `.env` file and changing the values of the
-`PIHOLE_MIN_TIMEOUT_SECONDS` and `PIHOLE_MAX_TIMEOUT_SECONDS` config entries. The `PIHOLE_MIN_TIMEOUT_SECONDS` is not
-only the minimum amount of time pausing will last but also the default.
-
-## Enjoy ad blocker pausing
-
-Once all is done, all you have to is point your browser to the server running the application. This will show you the
-current status of pausing, which Pi-holes were successful in being paused and a timer indicating when ad blocking will
-resume. Share the URL for your deployment with members of your household and they will also be able to conveniently
-pause ad blocking as needed.
-
 ## Contributing
-If you find this useful but think it can be improved, feel free to offer your suggestions. You may also issue a PR
-directly for new features or bug fixes. 
+
+If you'd like to contribute to this project or suggest improvements, please feel free to submit your ideas. You can also open a pull request for new features or bug fixes.

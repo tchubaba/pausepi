@@ -2,22 +2,23 @@
 
 ## Overview
 
-The Pi-hole ad blocker is an effective tool for blocking ads network-wide, but it can sometimes interfere with online services like video streaming or opening some web pages. To address this issue, we introduce Pi-hole Pauser, a Laravel 11 application that allows you to temporarily pause Pi-hole's ad blocking from a single web page.
+The Pi-hole ad blocker is an effective tool for blocking ads network-wide, but it can sometimes interfere with online services like video streaming or opening some web pages. Of course you can pause ad blocking from the Pi-hole admin dashboard, but it is a hassle, especially if you have more than one configured in your network. It's also inconvenient for other users who may not have access to the Pi-hole's dashboard. 
+
+To address these issues, we introduce Pi-hole Pauser, a tool that allows you to temporarily pause Pi-hole's ad blocking from a single web page.
 
 ## Features
 
-* Pause ad blocking for one or more Pi-holes simultaneously from a single web page
-* Adjustable pause duration (default: 30 seconds)
-* Supports multiple Pi-holes
+* Pause ad blocking for one or multiple Pi-holes simultaneously
+* Adjustable pause duration (default: 30 seconds) via URL parameter
+* Includes an easy-to-use configuration tool for managing your Pi-holes' information
 * Configurable minimum and maximum pause durations via environment variables
-* Pause duration can be adjusted via URL parameter.
 
 ## Installation
 
 To install Pi-hole Pauser, follow these steps:
 
 
-* Clone the repository to a directory of your choice.
+* Clone this repository to a directory of your choice.
 * Set up a PHP 8.3+ environment with the required extensions and server configuration (see [Laravel's documentation](https://laravel.com/docs/11.x/deployment#server-requirements)).
 * Install the PHP `sqlite3` extension.
 * Run the following commands:
@@ -30,13 +31,13 @@ php artisan migrate
 
 ## Configuration
 
-To add Pi-holes to your network, run the included Pi-hole manager from the command line:
+To enable communication between the application and your Pi-holes, you will need to provide the necessary configuration information. This includes the IP addresses of the Pi-holes and their corresponding API tokens. The API token can be retrieved from the Pi-hole's administrative dashboard by navigating to Settings > API > Show API Token. To configure them, run the included Pi-hole manager from the command line:
 
 ```shell
 php artisan pihole:manager
 ```
 
-This tool allows you to view and manage configured Pi-holes, as well as add, edit, or remove them.
+This tool allows you to view configured Pi-holes, as well as add, edit, or remove them. Note that if you ever change the Pi-hole admin password, the API Token will change as well and you will need to re-run this manager to update it.
 
 ## Usage
 

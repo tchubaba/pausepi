@@ -50,15 +50,15 @@ You can also adjust the pause duration by adding a parameter to the URL. For exa
 
 To adjust the minimum and maximum pause durations, update the following values in your .env file:
 
-* PIHOLE_MIN_TIMEOUT_SECONDS: sets the minimum pause duration in seconds (also serves as the default) and
-* PIHOLE_MAX_TIMEOUT_SECONDS: sets the maximum pause duration in seconds
+* PAUSEPI_MIN_TIMEOUT_SECONDS: sets the minimum pause duration in seconds (also serves as the default) and
+* PAUSEPI_MAX_TIMEOUT_SECONDS: sets the maximum pause duration in seconds
 
 For example, to set a minimum pause duration of 15 seconds and a maximum duration of 10 minutes, you would update your .env file as follows:
 
 ```dotenv
 # PausePi specific config
-PIHOLE_MIN_TIMEOUT_SECONDS=15
-PIHOLE_MAX_TIMEOUT_SECONDS=600
+PAUSEPI_MIN_TIMEOUT_SECONDS=15
+PAUSEPI_MAX_TIMEOUT_SECONDS=600
 ```
 ## Contributing
 

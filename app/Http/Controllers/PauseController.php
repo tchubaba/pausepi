@@ -31,8 +31,8 @@ class PauseController extends BaseController
 
     public function __construct()
     {
-        $this->minSec = config('pihole.min_timeout_seconds');
-        $this->maxSec = config('pihole.max_timeout_seconds');
+        $this->minSec = config('pausepi.min_timeout_seconds');
+        $this->maxSec = config('pausepi.max_timeout_seconds');
     }
 
     /**

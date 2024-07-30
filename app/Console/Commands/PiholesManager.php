@@ -50,7 +50,7 @@ class PiholesManager extends Command
      */
     public function handle(): void
     {
-        info('Welcome to Pi-Hole Pauser Manager');
+        info('Welcome to PausePi Manager');
 
         do {
             $option = select(

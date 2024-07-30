@@ -1,10 +1,10 @@
-# Pi-hole Pauser
+# PausePi
 
 ## Overview
 
 The Pi-hole ad blocker is an effective tool for blocking ads network-wide, but it can sometimes interfere with online services like video streaming or opening some web pages. Of course you can pause ad blocking from the Pi-hole admin dashboard, but it is a hassle, especially if you have more than one configured in your network. It's also inconvenient for other users who may not have access to the Pi-hole's dashboard. 
 
-To address these issues, we introduce Pi-hole Pauser, a tool that allows you to temporarily pause Pi-hole's ad blocking from a single web page.
+To address these issues, we introduce PausePi, a tool that allows you to temporarily pause Pi-hole's ad blocking from a single web page.
 
 ## Features
 
@@ -15,7 +15,7 @@ To address these issues, we introduce Pi-hole Pauser, a tool that allows you to 
 
 ## Installation
 
-The Pi-hole Pauser is a Laravel 11 application. To install it, follow these steps:
+The PausePi is a Laravel 11 application. To install it, follow these steps:
 
 * Clone this repository to a directory of your choice.
 * Set up a PHP 8.3+ environment with the required extensions and server configuration (see [Laravel's documentation](https://laravel.com/docs/11.x/deployment#server-requirements)).
@@ -40,7 +40,7 @@ This tool allows you to view configured Pi-holes, as well as add, edit, or remov
 
 ## Usage
 
-Once installed and configured, pause ad blocking by visiting your web server's URL in your browser. Pi-Hole Pauser will attempt to pause all configured Pi-holes simultaneously. From there, you will also:
+Once installed and configured, pause ad blocking by visiting your web server's URL in your browser. PausePi will attempt to pause all configured Pi-holes simultaneously. From there, you will also:
 
 * View the current status of pausing, including which Pi-holes were successfully paused
 * See a timer indicating when ad blocking will resume
@@ -56,7 +56,7 @@ To adjust the minimum and maximum pause durations, update the following values i
 For example, to set a minimum pause duration of 15 seconds and a maximum duration of 10 minutes, you would update your .env file as follows:
 
 ```dotenv
-# Pi-hole Pauser specific config
+# PausePi specific config
 PIHOLE_MIN_TIMEOUT_SECONDS=15
 PIHOLE_MAX_TIMEOUT_SECONDS=600
 ```

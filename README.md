@@ -15,14 +15,14 @@ To address these issues, we introduce PausePi, a tool that allows you to tempora
 
 ## Installation
 
-The PausePi is a Laravel 11 application. To install it, follow these steps:
+PausePi is a Laravel 11 application. To install it, follow these steps:
 
 * Clone this repository to a directory of your choice.
 * Set up a PHP 8.3+ environment with the required extensions and server configuration (see [Laravel's documentation](https://laravel.com/docs/11.x/deployment#server-requirements)).
 * Install the PHP `sqlite3` extension.
 * Run the following commands:
 ```shell
-cd /path/to/piholepauser
+cd /path/to/pausepi
 cp .env.example .env
 php artisan key:generate
 php artisan migrate
@@ -46,7 +46,7 @@ Once installed and configured, pause ad blocking by visiting your web server's U
 * See a timer indicating when ad blocking will resume
 
 
-You can also adjust the pause duration by adding a parameter to the URL. For example, to pause for 60 seconds, you would add 60 to the URL: http://piholepauserurl/60. The default maximum pause duration is 5 minutes (300 seconds), but this can be adjusted via environment variables if needed.
+You can also adjust the pause duration by adding a parameter to the URL. For example, to pause for 60 seconds, you would add 60 to the URL: http://pausepi/60. The default maximum pause duration is 5 minutes (300 seconds), but this can be adjusted via environment variables if needed.
 
 To adjust the minimum and maximum pause durations, update the following values in your .env file:
 

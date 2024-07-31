@@ -1,3 +1,9 @@
+<p align="center">
+  <picture>
+    <img src="https://raw.githubusercontent.com/tchubaba/pausepi/master/public/images/pausepi.png" width="220" height="236" alt="PausePi">
+  </picture>
+</p>
+
 # PausePi
 
 ## Overview

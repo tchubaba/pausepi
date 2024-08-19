@@ -18,7 +18,7 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\warning;
 
-class PiholesManager extends Command
+class PausePiManager extends Command
 {
     /**
      * The name and signature of the console command.
@@ -32,7 +32,7 @@ class PiholesManager extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Allows for managing Pi-holes to be paused by PausePi Manager';
 
     protected array $managerOptions;
 

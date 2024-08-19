@@ -36,7 +36,7 @@ php artisan migrate
 
 ## Configuration
 
-To enable communication between the application and your Pi-holes, you will need to provide the necessary configuration information. This includes the IP addresses of the Pi-holes and their corresponding API tokens. The API token can be retrieved from the Pi-hole's administrative dashboard by navigating to Settings > API > Show API Token. To configure them, run the included Pi-hole manager from the command line:
+To enable communication between the application and your Pi-holes, you will need to provide the necessary configuration information. This includes the IP addresses of the Pi-holes and their corresponding API tokens. The API token can be retrieved from the Pi-hole's administrative dashboard by navigating to Settings > API > Show API Token. To configure them, run the included PausePi Manager from the command line:
 
 ```shell
 php artisan pausepi:manager

@@ -54,12 +54,12 @@ class PiholesManager extends Command
         info('Welcome to PausePi Manager');
 
         do {
-            $option = select(
+            $mainMenuOption = select(
                 'What would you like to do?',
                 $this->managerOptions
             );
 
-            switch ($option) {
+            switch ($mainMenuOption) {
                 case ManagerOptions::VIEW->value:
                     $piHoles = PiHoleBox::select(['name', 'hostname', 'api_key', 'description'])->get();
 
@@ -278,6 +278,6 @@ class PiholesManager extends Command
                 default:
                     info('Exited PausePi manager');
             }
-        } while ($option !== ManagerOptions::EXIT->value);
+        } while ($mainMenuOption !== ManagerOptions::EXIT->value);
     }
 }

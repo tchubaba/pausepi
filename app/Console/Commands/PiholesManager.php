@@ -7,6 +7,7 @@ use App\Models\PiHoleBox;
 use App\Repositories\PiHoleBoxRepository;
 use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 use Log;
 
 use function Laravel\Prompts\text;
@@ -66,7 +67,12 @@ class PiholesManager extends Command
                         warning('No Pi-holes have been added yet. Please add one.');
                     } else {
                         info('These are the currently configured Pi-holes:');
-                        table(['Name', 'Hostname', 'API Token', 'Description'], $piHoles->toArray());
+                        table(['Name', 'Hostname', 'API Token', 'Description'], $piHoles->map(
+                            function (PiHoleBox $box): PiHoleBox {
+                                $box->api_key = Str::of($box->api_key)->limit(10);
+                                return $box;
+                            }
+                        )->toArray());
                     }
 
                     break;

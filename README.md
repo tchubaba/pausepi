@@ -39,7 +39,7 @@ php artisan migrate
 To enable communication between the application and your Pi-holes, you will need to provide the necessary configuration information. This includes the IP addresses of the Pi-holes and their corresponding API tokens. The API token can be retrieved from the Pi-hole's administrative dashboard by navigating to Settings > API > Show API Token. To configure them, run the included Pi-hole manager from the command line:
 
 ```shell
-php artisan pihole:manager
+php artisan pausepi:manager
 ```
 
 This tool allows you to view configured Pi-holes, as well as add, edit, or remove them. Note that if you ever change the Pi-hole admin password, the API Token will change as well and you will need to re-run this manager to update it.

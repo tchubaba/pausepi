@@ -13,7 +13,7 @@
         <button id="again" type="button" disabled>Pause Again</button>
     @else
         <h1 style="color:red">Could not find any ad-blockers to pause :(</h1>
-        Please add a Pi-hole ad-blocker via the manager. Run the "php artisan pihole:manager" command at the root of the project.
+        Please add a Pi-hole ad-blocker via the manager. Run the "php artisan pausepi:manager" command at the root of the project.
     @endif
 @endsection
 @section('javascript')

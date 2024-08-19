@@ -24,7 +24,7 @@ class PiholesManager extends Command
      *
      * @var string
      */
-    protected $signature = 'pihole:manager';
+    protected $signature = 'pausepi:manager';
 
     /**
      * The console command description.
@@ -270,7 +270,7 @@ class PiholesManager extends Command
                     break;
                 case ManagerOptions::EXIT->value:
                 default:
-                    info('Exited Pihole manager');
+                    info('Exited PausePi manager');
             }
         } while ($option !== ManagerOptions::EXIT->value);
     }

@@ -28,10 +28,10 @@ PausePi is a Laravel 11 application. To install it, follow these steps:
 * Install the PHP `sqlite3` extension.
 * Run the following commands:
 ```shell
-cd /path/to/pausepi
-cp .env.example .env
-php artisan key:generate
-php artisan migrate
+docker compose up -d --build
+docker exec -it pausepi-php cp /var/www/.env.example /var/www/.env
+docker exec -it pausepi-php php /var/www/artisan key:generate
+docker exec -it pausepi-php php /var/www/artisan migrate
 ```
 
 ## Configuration
@@ -39,7 +39,7 @@ php artisan migrate
 To enable communication between the application and your Pi-holes, you will need to provide the necessary configuration information. This includes the IP addresses of the Pi-holes and their corresponding API tokens. The API token can be retrieved from the Pi-hole's administrative dashboard by navigating to Settings > API > Show API Token. To configure them, run the included PausePi Manager from the command line:
 
 ```shell
-php artisan pausepi:manager
+docker exec -it pausepi-php php /var/www/artisan pausepi:manager
 ```
 
 This tool allows you to view configured Pi-holes, as well as add, edit, or remove them. Note that if you ever change the Pi-hole admin password, the API Token will change as well and you will need to re-run this manager to update it.

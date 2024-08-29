@@ -3,6 +3,9 @@ FROM php:8.3-fpm
 # Set working directory
 WORKDIR /var/www
 
+# Run as root to avoid permission issues
+USER root
+
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -29,9 +32,9 @@ RUN chmod +x /usr/local/bin/install-php-extensions && sync && \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Add user for laravel application
-RUN groupadd -g 1000 www
-RUN useradd -u 1000 -ms /bin/bash -g www www
+# Add user for laravel application, if they don't already exist
+RUN getent group www || groupadd -g 1000 www
+RUN getent passwd www || useradd -u 1000 -ms /bin/bash -g www www
 
 # Copy existing application directory contents
 COPY . /var/www

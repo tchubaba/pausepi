@@ -10,26 +10,14 @@
     {{-- Title --}}
     <title>{{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: black;
-            color: white;
-        }
-
-        .status {
-            font-weight: bold;
-            color: green;
-        }
-    </style>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="font-sans text-white bg-black">
+<div id="app" class="container mx-auto">
+    @yield('content')
+</div>
 <script type="module">
     @yield('javascript')
 </script>
-<div id="app">
-    @yield('content')
-</div>
 </body>
 </html>

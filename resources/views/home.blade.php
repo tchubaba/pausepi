@@ -2,18 +2,18 @@
 @extends('main')
 @section('content')
     @if (count($report) > 0)
-        <h1 id="message">Hurry, do your thing! Ad blocking will resume in <span id="time">{{ $seconds }}</span> seconds
+        <h1 class="text-2xl" id="message">Hurry, do your thing! Ad blocking will resume in <span id="time">{{ $seconds }}</span> seconds
             :)</h1>
         <ul>
             @foreach ($report as $result)
-                <li>{{ $result->piholeBox->name }} Pi-hole ({{ $result->piholeBox->hostname }}) status: <span class="status" style="{{ $result->status === PauseResultStatus::SUCCESS ? '' : 'color: red;' }}">{{ $result->status === PauseResultStatus::SUCCESS ? 'Ad Blocking Paused' : 'Could not pause! (Ad blocking may be active...)' }}</span>
+                <li>{{ $result->piholeBox->name }} Pi-hole ({{ $result->piholeBox->hostname }}) status: <span class="font-bold {{ $result->status === PauseResultStatus::SUCCESS ? 'text-green-600' : 'text-red-600' }}">{{ $result->status === PauseResultStatus::SUCCESS ? 'Ad Blocking Paused' : 'Could not pause! (Ad blocking may be active...)' }}</span>
                 </li>
             @endforeach
         </ul>
         <button id="again" type="button" disabled>Pause Again</button>
     @else
-        <h1 style="color:red">Could not find any ad-blockers to pause :(</h1>
-        Please add a Pi-hole ad-blocker via the manager. Run the "php artisan pausepi:manager" command at the root of the project.
+        <h1 class="text-red-600 text-2xl my-2">Could not find any ad-blockers to pause :(</h1>
+            <p class="my-1">Please add a Pi-hole ad-blocker via the manager. Run the "php artisan pausepi:manager" command at the root of the project.</p>
     @endif
 @endsection
 @section('javascript')

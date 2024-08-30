@@ -1,4 +1,10 @@
-@php use App\Enums\PauseResultStatus; @endphp
+@php
+use App\Enums\PauseResultStatus;
+use App\Models\PauseResult;
+/**
+* @var PauseResult[] $report
+*/
+@endphp
 @extends('main')
 @section('content')
     @if (count($report) > 0)
@@ -9,7 +15,7 @@
                 </li>
             @endforeach
         </ul>
-        <button id="again" type="button" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded opacity-40 cursor-not-allowed" disabled>Pause Again</button>
+        <button id="again" type="button" class="mt-2 bg-blue-500 text-white font-bold py-2 px-4 rounded opacity-40 cursor-not-allowed" disabled>Pause Again</button>
     @else
         <h1 class="text-red-600 text-2xl my-2">Could not find any ad-blockers to pause :(</h1>
         <p class="my-1">Please add a Pi-hole ad-blocker via the manager. Click <a href="https://github.com/tchubaba/pausepi?tab=readme-ov-file#configuration" target="_blank" class="text-blue-500 hover:text-blue-700">here</a> for details.</p>
@@ -50,7 +56,7 @@
             if (--timer < 0) {
                 clearInterval(intervalId);
                 $('.status').text('Ad Blocking Active').removeClass('text-green-600').addClass('text-red-600');
-                $('#again').prop('disabled', false).removeClass('opacity-40 cursor-not-allowed');
+                $('#again').prop('disabled', false).removeClass('opacity-40 cursor-not-allowed').addClass('hover:bg-blue-700');
                 $('#message').text('Ad blocking has resumed. Please pause again if you need more time.')
             }
         }, 1000);

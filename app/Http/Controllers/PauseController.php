@@ -53,80 +53,81 @@ class PauseController extends BaseController
         } else {
             $seconds     = $seconds >= $this->minSec && $seconds <= $this->maxSec ? $seconds : $this->minSec;
             $report      = [];
-
-            $requests = function (Collection $piholeBoxes) use ($client, $seconds) {
-                /** @var PiHoleBox $box */
-                foreach ($piholeBoxes as $box) {
-                    $url = $box->getPauseUrl($seconds);
-                    yield function () use ($client, $url) {
-                        return $client->getAsync($url, [
-                            RequestOptions::TIMEOUT         => 2,
-                            RequestOptions::CONNECT_TIMEOUT => 2,
-                        ]);
-                    };
-                }
-            };
-
             $piholeBoxes = $piHoleBoxRepository->getPiHoleBoxes();
-            $pool        = new Pool($client, $requests($piholeBoxes), [
-                'concurrency' => count($piholeBoxes),
-                'fulfilled'   => function (Response $response, int $index) use ($seconds, $piholeBoxes, &$report) {
+            $allFailed   = true;
+
+            if ($piholeBoxes->isNotEmpty()) {
+                $requests = function (Collection $piholeBoxes) use ($client, $seconds) {
                     /** @var PiHoleBox $box */
-                    $box      = $piholeBoxes[$index];
-                    $contents = json_decode($response->getBody()->getContents());
-
-                    if ( ! empty($contents)
-                        && property_exists($contents, 'status')
-                        && $contents->status === 'disabled'
-                    ) {
-                        $result = PauseResultStatus::SUCCESS;
-                    } else {
-                        $result = PauseResultStatus::INVALID_RESPONSE;
-                        Log::warning(
-                            sprintf(
-                                'Did not receive the expected response from the Pi-hole box at %s. Is the API'
-                                . ' key correct?',
-                                $box->ipAddress,
-                            )
-                        );
+                    foreach ($piholeBoxes as $box) {
+                        $url = $box->getPauseUrl($seconds);
+                        yield function () use ($client, $url) {
+                            return $client->getAsync($url, [
+                                RequestOptions::TIMEOUT         => 2,
+                                RequestOptions::CONNECT_TIMEOUT => 2,
+                            ]);
+                        };
                     }
+                };
 
-                    $report[$index] = new PauseResult($box, $result, Carbon::now());
-                },
-                'rejected' => function ($reason, $index) use ($seconds, $piholeBoxes, &$report) {
-                    /** @var PiHoleBox $box */
-                    $box = $piholeBoxes[$index];
-                    if ($reason instanceof RequestException && $reason->hasResponse()) {
-                        $errorMsg = sprintf('Got status code %', $reason->getResponse()->getStatusCode());
-                    } else {
-                        $errorMsg = $reason->getMessage();
+                $pool = new Pool($client, $requests($piholeBoxes), [
+                    'concurrency' => count($piholeBoxes),
+                    'fulfilled'   => function (Response $response, int $index) use ($seconds, $piholeBoxes, &$report) {
+                        /** @var PiHoleBox $box */
+                        $box      = $piholeBoxes[$index];
+                        $contents = json_decode($response->getBody()->getContents());
+
+                        if ( ! empty($contents)
+                            && property_exists($contents, 'status')
+                            && $contents->status === 'disabled'
+                        ) {
+                            $result = PauseResultStatus::SUCCESS;
+                        } else {
+                            $result = PauseResultStatus::INVALID_RESPONSE;
+                            Log::warning(
+                                sprintf(
+                                    'Did not receive the expected response from the Pi-hole box at %s. Is the API'
+                                    . ' key correct?',
+                                    $box->ipAddress,
+                                )
+                            );
+                        }
+
+                        $report[$index] = new PauseResult($box, $result, Carbon::now());
+                    },
+                    'rejected' => function ($reason, $index) use ($seconds, $piholeBoxes, &$report) {
+                        /** @var PiHoleBox $box */
+                        $box = $piholeBoxes[$index];
+                        if ($reason instanceof RequestException && $reason->hasResponse()) {
+                            $errorMsg = sprintf('Got status code %', $reason->getResponse()->getStatusCode());
+                        } else {
+                            $errorMsg = $reason->getMessage();
+                        }
+
+                        $report[$index] = new PauseResult($box, PauseResultStatus::TIMEOUT, Carbon::now());
+
+                        Log::warning(sprintf(
+                            'Could not pause Pi-Hole box \'%s\': %s',
+                            $box->name,
+                            $errorMsg,
+                        ));
+                    },
+                ]);
+
+                $requestTime = Carbon::now();
+                $pool->promise()->wait();
+
+                /** @var PauseResult $result */
+                foreach ($report as $result) {
+                    if ($result->status === PauseResultStatus::SUCCESS) {
+                        $allFailed = false;
+                        break;
                     }
-
-                    $report[$index] = new PauseResult($box, PauseResultStatus::TIMEOUT, Carbon::now());
-
-                    Log::warning(sprintf(
-                        'Could not pause Pi-Hole box \'%s\': %s',
-                        $box->name,
-                        $errorMsg,
-                    ));
-                },
-            ]);
-
-            $promise     = $pool->promise();
-            $requestTime = Carbon::now();
-            $promise->wait();
-
-            $allFailed = true;
-            /** @var PauseResult $result */
-            foreach ($report as $result) {
-                if ($result->status === PauseResultStatus::SUCCESS) {
-                    $allFailed = false;
-                    break;
                 }
-            }
 
-            ksort($report);
-            $seconds = $seconds - (int) ($requestTime->diffInSeconds(Carbon::now()));
+                ksort($report);
+                $seconds = $seconds - (int)($requestTime->diffInSeconds(Carbon::now()));
+            }
 
             if ( ! $allFailed) {
                 Cache::set($this->cacheKey, [

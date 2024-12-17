@@ -3,6 +3,8 @@ use App\Enums\PauseResultStatus;
 use App\Models\PauseResult;
 /**
 * @var PauseResult[] $report
+* @var int $seconds
+* @var bool $allFailed
 */
 @endphp
 @extends('main')

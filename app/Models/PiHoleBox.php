@@ -7,12 +7,16 @@ namespace App\Models;
 use Eloquent;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
+ * @property int $id
  * @property string $name
  * @property string $api_key
  * @property string $hostname
  * @property string $description
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @method static Builder|PiHoleBox newModelQuery()
  * @method static Builder|PiHoleBox newQuery()
  * @method static Builder|PiHoleBox query()
@@ -20,6 +24,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static Builder|PiHoleBox whereApiKey()
  * @method static Builder|PiHoleBox whereHostName()
  * @method static Builder|PiHoleBox whereDescription()
+ * @method static Builder|PiHoleBox whereCreatedAt($value)
+ * @method static Builder|PiHoleBox whereId($value)
+ * @method static Builder|PiHoleBox whereUpdatedAt($value)
  * @mixin Eloquent
  */
 class PiHoleBox extends Model

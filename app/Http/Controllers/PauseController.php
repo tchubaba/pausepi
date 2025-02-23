@@ -61,11 +61,25 @@ class PauseController extends BaseController
                     /** @var PiHoleBox $box */
                     foreach ($piholeBoxes as $box) {
                         $url = $box->getPauseUrl($seconds);
-                        yield function () use ($client, $url) {
-                            return $client->getAsync($url, [
-                                RequestOptions::TIMEOUT         => 2,
-                                RequestOptions::CONNECT_TIMEOUT => 2,
-                            ]);
+                        yield function () use ($client, $url, $box, $seconds) {
+                            if ($box->version < 6) {
+                                return $client->getAsync($url, [
+                                    RequestOptions::TIMEOUT         => 2,
+                                    RequestOptions::CONNECT_TIMEOUT => 2,
+                                ]);
+                            } else {
+                                return $client->postAsync($url, [
+                                    'json' => [
+                                        'blocking' => false,
+                                        'timer'    => $seconds,
+                                    ],
+                                    'headers' => [
+                                        'X-FTL-SID' => $this->getV6PiHoleAuthSid($box),
+                                    ],
+                                    RequestOptions::TIMEOUT         => 2,
+                                    RequestOptions::CONNECT_TIMEOUT => 2,
+                                ]);
+                            }
                         };
                     }
                 };
@@ -143,5 +157,14 @@ class PauseController extends BaseController
             'report'    => $report,
             'allFailed' => $allFailed,
         ]);
+    }
+
+    protected function getV6PiHoleAuthSid(PiHoleBox $box): ?string
+    {
+        if ($box->version < 6) {
+            return null;
+        }
+
+
     }
 }

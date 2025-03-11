@@ -38,7 +38,9 @@ class PiHoleBox extends Model
 {
     protected $table = 'pi_hole_boxes';
 
-    protected string $piUrlTemplate = 'http://%s/admin/api.php?disable=%s&auth=%s';
+    protected string $pi5PauseUrlTemplate = 'http://%s/admin/api.php?disable=%s&auth=%s';
+
+    protected string $pi6PauseUrlTemplate = 'https://%s/api/dns/blocking';
 
     protected $fillable = [
         'name',
@@ -48,20 +50,6 @@ class PiHoleBox extends Model
         'hostname',
         'description',
     ];
-
-    public function getPauseUrl(int $timeout): string
-    {
-        if ($this->version <= 5) {
-            return sprintf(
-                $this->piUrlTemplate,
-                $this->hostname,
-                $timeout + 2,
-                $this->api_key,
-            );
-        } else {
-            // TODO: handle version 6 and above
-        }
-    }
 
     public function setPasswordAttribute(?string $value): void
     {
@@ -79,6 +67,45 @@ class PiHoleBox extends Model
         }
 
         return $value;
+    }
+
+    public function getPauseUrl(int $timeout = 30): string
+    {
+        if ($this->isVersion6()) {
+            return sprintf(
+                $this->pi6PauseUrlTemplate,
+                $this->hostname,
+            );
+        } else {
+            return sprintf(
+                $this->pi5PauseUrlTemplate,
+                $this->hostname,
+                $timeout + 2,
+                $this->api_key,
+            );
+        }
+    }
+
+    public function isVersion6(): bool
+    {
+        return $this->version >= 6;
+    }
+
+    public function requiresAuthentication(): bool
+    {
+        return $this->isVersion6();
+    }
+
+    public function getAuthUrl(): ?string
+    {
+        if ($this->requiresAuthentication()) {
+            return sprintf(
+                'https://%s/api/auth',
+                $this->hostname,
+            );
+        }
+
+        return null;
     }
 
     protected function casts(): array

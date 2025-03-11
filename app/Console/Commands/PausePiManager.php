@@ -10,6 +10,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use Log;
 
+use function Laravel\Prompts\password;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\select;
@@ -61,13 +62,13 @@ class PausePiManager extends Command
 
             switch ($mainMenuOption) {
                 case ManagerOptions::VIEW->value:
-                    $piHoles = PiHoleBox::select(['name', 'hostname', 'api_key', 'description'])->get();
+                    $piHoles = PiHoleBox::select(['name', 'hostname', 'version', 'api_key', 'description'])->get();
 
                     if ($piHoles->isEmpty()) {
                         warning('No Pi-holes have been added yet. Please add one.');
                     } else {
                         info('These are the currently configured Pi-holes:');
-                        table(['Name', 'Hostname', 'API Token', 'Description'], $piHoles->map(
+                        table(['Name', 'Hostname', 'Major Version', 'API Token', 'Description'], $piHoles->map(
                             function (PiHoleBox $box): PiHoleBox {
                                 $box->api_key = Str::of($box->api_key)->limit(10);
                                 return $box;
@@ -95,15 +96,31 @@ class PausePiManager extends Command
                         required: 'A hostname is required'
                     );
 
-                    $apiKey = text(
-                        label: 'API Token',
-                        placeholder: 'Can be obtained from Settings > API > Show API Token',
-                        required: 'An api token is required',
-                        validate: fn (string $value) => match (true) {
-                            strlen($value) !== 64 => 'The api key must be 64 characters long',
-                            default               => null,
-                        },
+                    $version = select(
+                        label: 'Major version',
+                        options: [5, 6],
+                        default: 6,
                     );
+
+                    if ($version === 5) {
+                        $apiKey = text(
+                            label: 'API Token',
+                            placeholder: 'Can be obtained from Settings > API > Show API Token',
+                            required: 'An api token is required',
+                            validate: fn (string $value) => match (true) {
+                                strlen($value) !== 64 => 'The api key must be 64 characters long',
+                                default               => null,
+                            },
+                        );
+                        $password = '';
+                    } else {
+                        $apiKey   = '';
+                        $password = password(
+                            label: 'Password',
+                            placeholder: 'The Pi-hole password or a configured app password. Leave blank if no password.',
+                            required: false,
+                        );
+                    }
 
                     $description = text(
                         label: 'Description',
@@ -115,7 +132,7 @@ class PausePiManager extends Command
                     );
 
                     info('New Pi-Hole information:');
-                    table(['Name', 'Hostname', 'API Token', 'Description'], [[$name, $hostname, $apiKey, $description]]);
+                    table(['Name', 'Hostname', 'Major Version', 'API Token', 'Description'], [[$name, $hostname, $version, $apiKey, $description]]);
 
                     $confirmed = confirm(
                         label: 'Does the information look correct?',
@@ -131,6 +148,8 @@ class PausePiManager extends Command
                                 'hostname'    => $hostname,
                                 'api_key'     => $apiKey,
                                 'description' => $description,
+                                'password'    => $password,
+                                'version'     => $version,
                             ]);
                             $newPihole->save();
                             info(sprintf('New Pi-hole %s added successfully', $name));
@@ -184,15 +203,31 @@ class PausePiManager extends Command
                                     required: 'A hostname is required'
                                 );
 
-                                $apiKey = text(
-                                    label: 'API Token',
-                                    default: $piholeBox->api_key,
-                                    required: 'An api token is required',
-                                    validate: fn (string $value) => match (true) {
-                                        strlen($value) !== 64 => 'The api key must be 64 characters long',
-                                        default               => null,
-                                    },
+                                $version = select(
+                                    label: 'Major version',
+                                    options: [5, 6],
+                                    default: $piholeBox->version,
                                 );
+
+                                if ($version === 5) {
+                                    $apiKey = text(
+                                        label: 'API Token',
+                                        default: $piholeBox->api_key,
+                                        required: 'An api token is required',
+                                        validate: fn (string $value) => match (true) {
+                                            strlen($value) !== 64 => 'The api key must be 64 characters long',
+                                            default               => null,
+                                        },
+                                    );
+                                    $password = '';
+                                } else {
+                                    $apiKey   = '';
+                                    $password = password(
+                                        label: 'Password',
+                                        placeholder: 'The Pi-hole password or a configured app password. Leave blank if no password.',
+                                        required: false,
+                                    );
+                                }
 
                                 $description = text(
                                     label: 'Description',
@@ -204,7 +239,7 @@ class PausePiManager extends Command
                                 );
 
                                 info('Updated Pi-Hole information:');
-                                table(['Name', 'Hostname', 'API Token', 'Description'], [[$name, $hostname, $apiKey, $description]]);
+                                table(['Name', 'Hostname', 'Major Version', 'API Token', 'Description'], [[$name, $hostname, $version, $apiKey, $description]]);
 
                                 $confirmed = confirm(
                                     label: 'Does the information look correct?',
@@ -219,6 +254,8 @@ class PausePiManager extends Command
                                         $piholeBox->hostname    = $hostname;
                                         $piholeBox->api_key     = $apiKey;
                                         $piholeBox->description = $description;
+                                        $piholeBox->version     = $version;
+                                        $piholeBox->password    = $password;
                                         $piholeBox->save();
                                         info(sprintf('Pi-hole %s updated successfully', $name));
                                     } catch (Exception $e) {

@@ -2,10 +2,12 @@
 
 namespace App\Clients;
 
-use App\Enums\V6BlockingStatus;
+use App\Data\PiHole6API\AuthErrorResponse;
+use App\Data\PiHole6API\AuthResponse;
+use App\Data\PiHole6API\Blocking;
+use App\Data\PiHole6API\BlockingError;
 use App\Models\PiHoleBox;
 use Cache;
-use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\PromiseInterface;
@@ -16,7 +18,7 @@ use Illuminate\Support\Collection;
 use Log;
 use Psr\Http\Message\ResponseInterface;
 
-class PiHoleClient
+class PiHoleAPIClient
 {
     protected Client $client;
 
@@ -72,7 +74,14 @@ class PiHoleClient
                         RequestOptions::TIMEOUT         => 2,
                         RequestOptions::CONNECT_TIMEOUT => 2,
                         RequestOptions::VERIFY          => false,
-                    ]);
+                        RequestOptions::HTTP_ERRORS     => false,
+                    ])->then(function (ResponseInterface $response) use ($box) {
+                        if ($response->getStatusCode() === 200) {
+                            return Blocking::from($response->getBody()->getContents());
+                        } else {
+                            return BlockingError::from($response->getBody()->getContents());
+                        }
+                    });
                 } else {
                     Log::warning(sprintf(
                         'Skipping pause request for Pi-hole %s due to missing SID',
@@ -80,19 +89,9 @@ class PiHoleClient
                     ));
                 }
             } else {
-                $pausePromises[$box->id] = $this->client->getAsync($box->getPauseUrl($seconds));
-            }
-
-            if (isset($pausePromises[$box->id])) {
-                $pausePromises[$box->id] = $pausePromises[$box->id]->otherwise(
-                    function (RequestException $e) use ($box) {
-                        Log::error(sprintf(
-                            'Failed to pause Pi-Hole %s: %s',
-                            $box->name,
-                            $e->getMessage(),
-                        ));
-                    }
-                );
+                $pausePromises[$box->id] = $this->client->getAsync($box->getPauseUrl($seconds), [
+                    RequestOptions::HTTP_ERRORS => true,
+                ]);
             }
         }
 
@@ -123,28 +122,39 @@ class PiHoleClient
         return $this->client->postAsync($piHoleBox->getAuthUrl(), [
             RequestOptions::TIMEOUT         => 2,
             RequestOptions::CONNECT_TIMEOUT => 2,
+            RequestOptions::VERIFY          => false,
             RequestOptions::JSON            => [
                 'password' => $piHoleBox->password,
             ],
-            RequestOptions::VERIFY => false,
+            RequestOptions::HTTP_ERRORS => false,
         ])->then(function (ResponseInterface $response) use ($piHoleBox) {
-            $data     = json_decode($response->getBody()->getContents(), true);
-            $sid      = $data['session']['sid'] ?? null;
-            $validity = $data['session']['validity'] ?? null;
+            if ($response->getStatusCode() === 200
+                || $response->getStatusCode() === 401) {
+                $authResponse = AuthResponse::from($response->getBody()->getContents());
 
-            if ($sid) {
-                $this->storeSID($piHoleBox, $sid, $validity);
-                return $sid;
+                if ($authResponse->sessionIsValid()) {
+                    $this->storeSID($piHoleBox, $authResponse->session->sid, $authResponse->session->validity);
+                    return $authResponse->session->sid;
+                } else {
+                    Log::error(sprintf(
+                        'Authentication failed for Pi-Hole %s: %s',
+                        $piHoleBox->name,
+                        $authResponse->session->message,
+                    ));
+
+                    return null;
+                }
+            } else {
+                $authErrorResponse = AuthErrorResponse::from($response->getBody()->getContents());
+
+                Log::error(sprintf(
+                    'Authentication failed for Pi-Hole %s: %s',
+                    $piHoleBox->name,
+                    $authErrorResponse->error->message,
+                ));
+
+                return null;
             }
-
-            throw new Exception('No SID received.');
-        })->otherwise(function (RequestException $e) use ($piHoleBox) {
-            Log::error(sprintf(
-                'Authentication failed for Pi-Hole %s: %s',
-                $piHoleBox->name,
-                $e->getMessage(),
-            ));
-            return null;
         });
     }
 }

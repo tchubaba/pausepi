@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Clients\PiHoleClient;
+use App\Clients\PiHoleAPIClient;
+use App\Data\PiHole6API\Blocking;
 use App\Enums\PauseResultStatus;
 use App\Models\PauseResult;
 use App\Models\PiHoleBox;
@@ -35,9 +36,9 @@ class PauseController extends BaseController
      * @throws InvalidArgumentException
      */
     public function pausePiHoles(
-        PiHoleClient $client,
+        PiHoleAPIClient     $client,
         PiHoleBoxRepository $piHoleBoxRepository,
-        int $seconds = 30,
+        int                 $seconds = 30,
     ): View {
         $cacheData = Cache::get($this->cacheKey);
 
@@ -59,9 +60,15 @@ class PauseController extends BaseController
                     /** @var PiHoleBox $box */
                     $box = $piholeBoxes->firstWhere('id', $id);
 
+                    $errorReason = null;
                     if ($result['state'] === 'fulfilled') {
-                        $pauseResultStatus = PauseResultStatus::SUCCESS;
-                        $allFailed         = false;
+                        if ($result['value'] instanceof Blocking) {
+                            $pauseResultStatus = PauseResultStatus::SUCCESS;
+                            $allFailed         = false;
+                        } else {
+                            $pauseResultStatus = PauseResultStatus::FAILURE;
+                            $errorReason       = $result['value']->error->message;
+                        }
                     } elseif ($result['state'] === 'rejected') {
                         $pauseResultStatus = PauseResultStatus::TIMEOUT;
                     } else {
@@ -72,7 +79,7 @@ class PauseController extends BaseController
                         Log::warning(sprintf(
                             'Could not pause for pihole %s: %s',
                             $box->name,
-                            $result['reason']->getMessage(),
+                            $errorReason
                         ));
                     }
 

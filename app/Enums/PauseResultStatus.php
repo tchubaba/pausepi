@@ -9,4 +9,5 @@ enum PauseResultStatus: string
     case SUCCESS          = 'success';
     case TIMEOUT          = 'timeout';
     case INVALID_RESPONSE = 'invalid_response';
+    case FAILURE          = 'failure';
 }

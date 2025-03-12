@@ -3,7 +3,7 @@
         'name' => 'laravel/laravel',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '2288a00309a59f1c4d17ac64a8d208a48525d22e',
+        'reference' => 'd170b41bc674675564e34a6ad16a81ad0425da6c',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -17,7 +17,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../amphp/amp',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'amphp/byte-stream' => array(
             'pretty_version' => 'v2.1.1',
@@ -26,7 +26,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../amphp/byte-stream',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'amphp/cache' => array(
             'pretty_version' => 'v2.0.1',
@@ -35,7 +35,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../amphp/cache',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'amphp/dns' => array(
             'pretty_version' => 'v2.2.0',
@@ -44,7 +44,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../amphp/dns',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'amphp/parallel' => array(
             'pretty_version' => 'v2.2.9',
@@ -53,7 +53,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../amphp/parallel',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'amphp/parser' => array(
             'pretty_version' => 'v1.1.1',
@@ -62,7 +62,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../amphp/parser',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'amphp/pipeline' => array(
             'pretty_version' => 'v1.2.0',
@@ -71,7 +71,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../amphp/pipeline',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'amphp/process' => array(
             'pretty_version' => 'v2.0.3',
@@ -80,7 +80,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../amphp/process',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'amphp/serialization' => array(
             'pretty_version' => 'v1.0.0',
@@ -89,7 +89,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../amphp/serialization',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'amphp/socket' => array(
             'pretty_version' => 'v2.3.1',
@@ -98,7 +98,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../amphp/socket',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'amphp/sync' => array(
             'pretty_version' => 'v2.2.0',
@@ -107,7 +107,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../amphp/sync',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'amphp/windows-registry' => array(
             'pretty_version' => 'v1.0.1',
@@ -116,7 +116,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../amphp/windows-registry',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'barryvdh/laravel-ide-helper' => array(
             'pretty_version' => 'v3.0.0',
@@ -218,7 +218,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../daverandom/libdns',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'dflydev/dot-access-data' => array(
             'pretty_version' => 'v3.0.2',
@@ -245,7 +245,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../doctrine/deprecations',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'doctrine/inflector' => array(
             'pretty_version' => '2.0.10',
@@ -605,7 +605,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../kelunik/certificate',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'kodova/hamcrest-php' => array(
             'dev_requirement' => true,
@@ -625,7 +625,7 @@
         'laravel/laravel' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '2288a00309a59f1c4d17ac64a8d208a48525d22e',
+            'reference' => 'd170b41bc674675564e34a6ad16a81ad0425da6c',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -728,7 +728,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../league/uri',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'league/uri-interfaces' => array(
             'pretty_version' => '7.4.1',
@@ -737,7 +737,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../league/uri-interfaces',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'mockery/mockery' => array(
             'pretty_version' => '1.6.12',
@@ -853,6 +853,15 @@
             'aliases' => array(),
             'dev_requirement' => true,
         ),
+        'phpdocumentor/reflection' => array(
+            'pretty_version' => '6.1.0',
+            'version' => '6.1.0.0',
+            'reference' => 'bb4dea805a645553d6d989b23dad9f8041f39502',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../phpdocumentor/reflection',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'phpdocumentor/reflection-common' => array(
             'pretty_version' => '2.2.0',
             'version' => '2.2.0.0',
@@ -860,7 +869,16 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpdocumentor/reflection-common',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
+        ),
+        'phpdocumentor/reflection-docblock' => array(
+            'pretty_version' => '5.6.1',
+            'version' => '5.6.1.0',
+            'reference' => 'e5e784149a09bd69d9a5e3b01c5cbd2e2bd653d8',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../phpdocumentor/reflection-docblock',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'phpdocumentor/type-resolver' => array(
             'pretty_version' => '1.8.2',
@@ -869,7 +887,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpdocumentor/type-resolver',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'phpoption/phpoption' => array(
             'pretty_version' => '1.9.2',
@@ -896,7 +914,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../phpstan/phpdoc-parser',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'phpunit/php-code-coverage' => array(
             'pretty_version' => '11.0.3',
@@ -1054,8 +1072,8 @@
         'psr/log-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '3.0.0',
-                1 => '1.0|2.0|3.0',
+                0 => '1.0|2.0|3.0',
+                1 => '3.0.0',
             ),
         ),
         'psr/simple-cache' => array(
@@ -1179,7 +1197,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../revolt/event-loop',
             'aliases' => array(),
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'rhumsaa/uuid' => array(
             'dev_requirement' => false,
@@ -1331,11 +1349,38 @@
             'aliases' => array(),
             'dev_requirement' => true,
         ),
+        'spatie/laravel-data' => array(
+            'pretty_version' => '4.13.2',
+            'version' => '4.13.2.0',
+            'reference' => 'bd060f6d47ad4a3fac1f92162d76bfd9975b10ca',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../spatie/laravel-data',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'spatie/laravel-package-tools' => array(
+            'pretty_version' => '1.19.0',
+            'version' => '1.19.0.0',
+            'reference' => '1c9c30ac6a6576b8d15c6c37b6cf23d748df2faa',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../spatie/laravel-package-tools',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'spatie/once' => array(
             'dev_requirement' => false,
             'replaced' => array(
                 0 => '*',
             ),
+        ),
+        'spatie/php-structure-discoverer' => array(
+            'pretty_version' => '2.3.1',
+            'version' => '2.3.1.0',
+            'reference' => '42f4d731d3dd4b3b85732e05a8c1928fcfa2f4bc',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../spatie/php-structure-discoverer',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'symfony/clock' => array(
             'pretty_version' => 'v7.1.0',

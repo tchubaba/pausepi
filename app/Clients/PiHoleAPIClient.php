@@ -98,6 +98,11 @@ class PiHoleAPIClient
         return ! empty($pausePromises) ? Utils::settle($pausePromises)->wait() : [];
     }
 
+    public function clearSID(PiHoleBox $piHoleBox): void
+    {
+        Cache::forget($this->getCacheKey($piHoleBox));
+    }
+
     protected function getCacheKey(PiHoleBox $piHoleBox): string
     {
         return sprintf($this->cacheKey, $piHoleBox->id);

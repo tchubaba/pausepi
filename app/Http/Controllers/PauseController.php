@@ -62,12 +62,20 @@ class PauseController extends BaseController
 
                     $errorReason = null;
                     if ($result['state'] === 'fulfilled') {
-                        if ($result['value'] instanceof Blocking) {
-                            $pauseResultStatus = PauseResultStatus::SUCCESS;
-                            $allFailed         = false;
+                        if ($box->isVersion6()) {
+                            if ($result['value'] instanceof Blocking) {
+                                $pauseResultStatus = PauseResultStatus::SUCCESS;
+                                $allFailed         = false;
+                            } else {
+                                $pauseResultStatus = PauseResultStatus::FAILURE;
+                                $errorReason       = $result['value']->error->message;
+
+                                if ($errorReason === 'Unauthorized') {
+                                    $client->clearSID($box);
+                                }
+                            }
                         } else {
-                            $pauseResultStatus = PauseResultStatus::FAILURE;
-                            $errorReason       = $result['value']->error->message;
+                            //TODO: handle version 5
                         }
                     } elseif ($result['state'] === 'rejected') {
                         $pauseResultStatus = PauseResultStatus::TIMEOUT;

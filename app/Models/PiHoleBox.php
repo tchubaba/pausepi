@@ -42,6 +42,8 @@ class PiHoleBox extends Model
 
     protected string $pi6PauseUrlTemplate = 'https://%s/api/dns/blocking';
 
+    protected string $pi6AuthUrlTemplate = 'https://%s/api/auth';
+
     protected $fillable = [
         'name',
         'api_key',
@@ -100,7 +102,7 @@ class PiHoleBox extends Model
     {
         if ($this->requiresAuthentication()) {
             return sprintf(
-                'https://%s/api/auth',
+                $this->pi6AuthUrlTemplate,
                 $this->hostname,
             );
         }

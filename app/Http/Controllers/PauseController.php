@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Clients\PiHoleAPIClient;
+use App\Data\PiHole5API\Disable;
 use App\Data\PiHole6API\Blocking;
 use App\Enums\PauseResultStatus;
 use App\Models\PauseResult;
@@ -60,27 +61,28 @@ class PauseController extends BaseController
                     /** @var PiHoleBox $box */
                     $box = $piholeBoxes->firstWhere('id', $id);
 
-                    $errorReason = null;
+                    $errorReason       = null;
+                    $pauseResultStatus = PauseResultStatus::FAILURE;
                     if ($result['state'] === 'fulfilled') {
                         if ($box->isVersion6()) {
                             if ($result['value'] instanceof Blocking) {
                                 $pauseResultStatus = PauseResultStatus::SUCCESS;
                                 $allFailed         = false;
                             } else {
-                                $pauseResultStatus = PauseResultStatus::FAILURE;
-                                $errorReason       = $result['value']->error->message;
-
+                                $errorReason = $result['value']->error->message;
                                 if ($errorReason === 'Unauthorized') {
                                     $client->clearSID($box);
                                 }
                             }
                         } else {
-                            //TODO: handle version 5
+                            if ($result['value'] instanceof Disable
+                                && $result['value']->status === 'disabled') {
+                                $pauseResultStatus = PauseResultStatus::SUCCESS;
+                                $allFailed         = false;
+                            } else {
+                                $errorReason = 'Did not receive expected response from API';
+                            }
                         }
-                    } elseif ($result['state'] === 'rejected') {
-                        $pauseResultStatus = PauseResultStatus::TIMEOUT;
-                    } else {
-                        $pauseResultStatus = PauseResultStatus::INVALID_RESPONSE;
                     }
 
                     if ($pauseResultStatus !== PauseResultStatus::SUCCESS) {

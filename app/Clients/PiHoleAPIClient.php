@@ -2,6 +2,7 @@
 
 namespace App\Clients;
 
+use App\Data\PiHole5API\Disable;
 use App\Data\PiHole6API\AuthErrorResponse;
 use App\Data\PiHole6API\AuthResponse;
 use App\Data\PiHole6API\Blocking;
@@ -9,7 +10,6 @@ use App\Data\PiHole6API\BlockingError;
 use App\Models\PiHoleBox;
 use Cache;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\Utils;
 use GuzzleHttp\RequestOptions;
@@ -75,7 +75,7 @@ class PiHoleAPIClient
                         RequestOptions::CONNECT_TIMEOUT => 2,
                         RequestOptions::VERIFY          => false,
                         RequestOptions::HTTP_ERRORS     => false,
-                    ])->then(function (ResponseInterface $response) use ($box) {
+                    ])->then(function (ResponseInterface $response) {
                         if ($response->getStatusCode() === 200) {
                             return Blocking::from($response->getBody()->getContents());
                         } else {
@@ -91,7 +91,13 @@ class PiHoleAPIClient
             } else {
                 $pausePromises[$box->id] = $this->client->getAsync($box->getPauseUrl($seconds), [
                     RequestOptions::HTTP_ERRORS => true,
-                ]);
+                ])->then(function (ResponseInterface $response) {
+                    if ($response->getStatusCode() === 200) {
+                        return Disable::from($response->getBody()->getContents());
+                    }
+
+                    return $response;
+                });
             }
         }
 

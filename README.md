@@ -29,24 +29,23 @@ container or install it natively.
 ### Docker Container
 To deploy it as a Docker container (this assumes Docker is already installed):
 * Clone this repository to a directory of your choice.
-* CD into this directory and run the following commands:
+* CD into this directory and run the following command:
 ```shell
 docker compose up -d --build
-docker exec -it pausepi-php cp /var/www/.env.example /var/www/.env
-docker exec -it pausepi-php php /var/www/artisan key:generate
-docker exec -it pausepi-php php /var/www/artisan migrate
 ```
 
 ### Native install
 
 * Clone this repository to a directory of your choice.
 * Set up a PHP 8.3+ environment with the required extensions and server configuration (see [Laravel's documentation](https://laravel.com/docs/11.x/deployment#server-requirements)).
-* Install the PHP `sqlite3` extension.
+* Install the PHP `sqlite3` and `http` extensions.
+* Install Composer (look [here](https://getcomposer.org/download/))
 * CD into the directory and run the following commands:
 ```shell
 cp .env.example .env
+composer install --no-dev --optimize-autoloader --no-interaction
 php artisan key:generate
-php artisan migrate
+php artisan migrate --force
 ```
 
 ## Configuration

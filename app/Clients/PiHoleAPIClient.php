@@ -7,9 +7,12 @@ use App\Data\PiHole6API\AuthErrorResponse;
 use App\Data\PiHole6API\AuthResponse;
 use App\Data\PiHole6API\Blocking;
 use App\Data\PiHole6API\BlockingError;
+use App\Enums\PiHoleAPIClientPromiseResultState;
+use App\Models\NonDB\PiHoleAPIClientPromiseResult;
 use App\Models\PiHoleBox;
 use Cache;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\Utils;
 use GuzzleHttp\RequestOptions;
@@ -17,6 +20,7 @@ use http\Exception\InvalidArgumentException;
 use Illuminate\Support\Collection;
 use Log;
 use Psr\Http\Message\ResponseInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 class PiHoleAPIClient
 {
@@ -36,9 +40,9 @@ class PiHoleAPIClient
      * @param Collection<int, PiHoleBox> $piHoleBoxes
      * @param int $seconds
      *
-     * @return PromiseInterface|array
+     * @return array
      */
-    public function pausePiHoles(Collection $piHoleBoxes, int $seconds = 30): PromiseInterface|array
+    public function pausePiHoles(Collection $piHoleBoxes, int $seconds = 30): array
     {
         if ($piHoleBoxes->isEmpty()) {
             throw new InvalidArgumentException('piHoleBoxes collection must not be empty.');
@@ -63,25 +67,45 @@ class PiHoleAPIClient
             if ($box->requiresAuthentication()) {
                 $sid = $this->getSID($box);
                 if ($sid) {
-                    $pausePromises[$box->id] = $this->client->postAsync($box->getPauseUrl(), [
+                    $pausePromises[] = $this->client->postAsync($box->getPauseUrl(), [
                         RequestOptions::HEADERS => [
                             'X-FTL-SID' => $sid,
                         ],
                         RequestOptions::JSON => [
                             'blocking' => false,
-                            'timer'    => $seconds,
+                            'timer'    => $seconds + 2, // Add 2 to compensate for latency
                         ],
                         RequestOptions::TIMEOUT         => 2,
                         RequestOptions::CONNECT_TIMEOUT => 2,
                         RequestOptions::VERIFY          => false,
-                        RequestOptions::HTTP_ERRORS     => false,
-                    ])->then(function (ResponseInterface $response) {
-                        if ($response->getStatusCode() === 200) {
-                            return Blocking::from($response->getBody()->getContents());
-                        } else {
-                            return BlockingError::from($response->getBody()->getContents());
+                        RequestOptions::HTTP_ERRORS     => true,
+                        RequestOptions::ALLOW_REDIRECTS => false,
+                    ])->then(
+                        function (ResponseInterface $response) use ($box): PiHoleAPIClientPromiseResult {
+                            return new PiHoleAPIClientPromiseResult(
+                                state: PiHoleAPIClientPromiseResultState::FULFILLED,
+                                status: $response->getStatusCode(),
+                                box: $box,
+                                data: Blocking::from($response->getBody()->getContents()),
+                                response: $response,
+                            );
+                        },
+                        function (RequestException $exception) use ($box): PiHoleAPIClientPromiseResult {
+                            if ($exception->getCode() === Response::HTTP_UNAUTHORIZED) {
+                                // Clear SID from cache if we get 401 response. Otherwise, this could
+                                // cause delay in pausing if cached SID has long TTL.
+                                $this->clearSID($box);
+                            }
+
+                            return new PiHoleAPIClientPromiseResult(
+                                state: PiHoleAPIClientPromiseResultState::REJECTED,
+                                status: $exception->getCode(),
+                                box: $box,
+                                data: BlockingError::from($exception->getResponse()->getBody()->getContents()),
+                                exception: $exception,
+                            );
                         }
-                    });
+                    );
                 } else {
                     Log::warning(sprintf(
                         'Skipping pause request for Pi-hole %s due to missing SID',
@@ -89,22 +113,34 @@ class PiHoleAPIClient
                     ));
                 }
             } else {
-                $pausePromises[$box->id] = $this->client->getAsync($box->getPauseUrl($seconds), [
+                $pausePromises[] = $this->client->getAsync($box->getPauseUrl($seconds), [
                     RequestOptions::HTTP_ERRORS => true,
-                ])->then(function (ResponseInterface $response) {
-                    if ($response->getStatusCode() === 200) {
-                        return Disable::from($response->getBody()->getContents());
+                ])->then(
+                    function (ResponseInterface $response) use ($box): PiHoleAPIClientPromiseResult {
+                        return new PiHoleAPIClientPromiseResult(
+                            state: PiHoleAPIClientPromiseResultState::FULFILLED,
+                            status: $response->getStatusCode(),
+                            box: $box,
+                            data: Disable::from($response->getBody()->getContents()),
+                            response: $response,
+                        );
+                    },
+                    function (RequestException $exception) use ($box): PiHoleAPIClientPromiseResult {
+                        return new PiHoleAPIClientPromiseResult(
+                            state: PiHoleAPIClientPromiseResultState::REJECTED,
+                            status: $exception->getCode(),
+                            box: $box,
+                            exception: $exception,
+                        );
                     }
-
-                    return $response;
-                });
+                );
             }
         }
 
         return ! empty($pausePromises) ? Utils::settle($pausePromises)->wait() : [];
     }
 
-    public function clearSID(PiHoleBox $piHoleBox): void
+    protected function clearSID(PiHoleBox $piHoleBox): void
     {
         Cache::forget($this->getCacheKey($piHoleBox));
     }

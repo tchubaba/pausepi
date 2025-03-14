@@ -1,8 +1,10 @@
 @php
 use App\Enums\PauseResultStatus;
-use App\Models\PauseResult;
+use App\Models\NonDB\PauseResult;
+use Illuminate\Support\Collection
+
 /**
-* @var PauseResult[] $report
+* @var Collection<PauseResult> $report
 * @var int $seconds
 * @var bool $allFailed
 */

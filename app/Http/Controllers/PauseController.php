@@ -7,9 +7,13 @@ namespace App\Http\Controllers;
 use App\Clients\PiHoleAPIClient;
 use App\Data\PiHole5API\Disable;
 use App\Data\PiHole6API\Blocking;
+use App\Data\PiHole6API\BlockingError;
 use App\Enums\PauseResultStatus;
-use App\Models\PauseResult;
-use App\Models\PiHoleBox;
+use App\Enums\PiHoleAPIClientPromiseResultState;
+use App\Enums\V6BlockingStatus;
+use App\Models\NonDB\CachedPauseRequest;
+use App\Models\NonDB\PauseResult;
+use App\Models\NonDB\PiHoleAPIClientPromiseResult;
 use App\Repositories\PiHoleBoxRepository;
 use Carbon\Carbon;
 use Exception;
@@ -20,8 +24,6 @@ use Psr\SimpleCache\InvalidArgumentException;
 
 class PauseController extends BaseController
 {
-    protected string $cacheKey = 'piholepauser:pause';
-
     protected int $minSec;
 
     protected int $maxSec;
@@ -41,71 +43,89 @@ class PauseController extends BaseController
         PiHoleBoxRepository $piHoleBoxRepository,
         int                 $seconds = 30,
     ): View {
-        $cacheData = Cache::get($this->cacheKey);
+        /** @var ?CachedPauseRequest $cacheData */
+        $cacheData = Cache::get(CachedPauseRequest::CACHE_KEY);
 
         if ($cacheData !== null) {
-            $seconds   = $cacheData['seconds'] - (int) (Carbon::parse($cacheData['date'])->diffInSeconds(Carbon::now()));
-            $report    = $cacheData['report'];
+            $seconds   = $cacheData->seconds - (int) ($cacheData->date->diffInSeconds(Carbon::now()));
+            $report    = $cacheData->report;
             $allFailed = false;
         } else {
             $seconds     = $seconds >= $this->minSec && $seconds <= $this->maxSec ? $seconds : $this->minSec;
-            $report      = [];
+            $report      = collect();
             $piholeBoxes = $piHoleBoxRepository->getPiHoleBoxes();
             $allFailed   = true;
 
             if ($piholeBoxes->isNotEmpty()) {
                 $requestTime = Carbon::now();
-                $results     = $client->pausePiHoles($piholeBoxes);
+                $results     = $client->pausePiHoles($piholeBoxes, $seconds);
 
-                foreach ($results as $id => $result) {
-                    /** @var PiHoleBox $box */
-                    $box = $piholeBoxes->firstWhere('id', $id);
-
+                foreach ($results as $result) {
                     $errorReason       = null;
                     $pauseResultStatus = PauseResultStatus::FAILURE;
-                    if ($result['state'] === 'fulfilled') {
-                        if ($box->isVersion6()) {
-                            if ($result['value'] instanceof Blocking) {
+                    /** @var PiHoleAPIClientPromiseResult $promiseResult */
+                    $promiseResult = $result['value'];
+                    if ($promiseResult->state === PiHoleAPIClientPromiseResultState::FULFILLED) {
+                        if ($promiseResult->box->isVersion6()) {
+                            /** @var Blocking $blocking */
+                            $blocking = $promiseResult->data;
+                            if ($blocking->blocking === V6BlockingStatus::DISABLED) {
                                 $pauseResultStatus = PauseResultStatus::SUCCESS;
                                 $allFailed         = false;
                             } else {
-                                $errorReason = $result['value']->error->message;
-                                if ($errorReason === 'Unauthorized') {
-                                    $client->clearSID($box);
-                                }
+                                $errorReason = sprintf(
+                                    'Pi-Hole indicated ad blocking status of %s',
+                                    $blocking->blocking->name
+                                );
                             }
                         } else {
-                            if ($result['value'] instanceof Disable
-                                && $result['value']->status === 'disabled') {
+                            /** @var Disable $disable */
+                            $disable = $promiseResult->data;
+                            if ($disable->status === 'disabled') {
                                 $pauseResultStatus = PauseResultStatus::SUCCESS;
                                 $allFailed         = false;
                             } else {
                                 $errorReason = 'Did not receive expected response from API';
                             }
                         }
+                    } else {
+                        // Handle rejected calls
+                        if ($promiseResult->box->isVersion6()) {
+                            /** @var BlockingError $blockingError */
+                            $blockingError = $promiseResult->data;
+                            $errorReason   = $blockingError->error->message;
+                        } else {
+                            $errorReason = sprintf(
+                                'Received HTTP code %s from API',
+                                $promiseResult->status
+                            );
+                        }
                     }
 
                     if ($pauseResultStatus !== PauseResultStatus::SUCCESS) {
                         Log::warning(sprintf(
-                            'Could not pause for pihole %s: %s',
-                            $box->name,
+                            'Could not pause Pi-Hole %s: %s',
+                            $promiseResult->box->name,
                             $errorReason
                         ));
                     }
 
-                    $report[$id] = new PauseResult($box, $pauseResultStatus, Carbon::now());
+                    $report->add(new PauseResult($promiseResult->box, $pauseResultStatus, Carbon::now()));
                 }
 
-                ksort($report);
                 $seconds = $seconds - (int)($requestTime->diffInSeconds(Carbon::now()));
-            }
 
-            if ( ! $allFailed) {
-                Cache::set($this->cacheKey, [
-                    'seconds' => $seconds,
-                    'date'    => Carbon::now()->toDateTimeString(),
-                    'report'  => $report,
-                ], $seconds);
+                if ( ! $allFailed) {
+                    Cache::set(
+                        key: CachedPauseRequest::CACHE_KEY,
+                        value: new CachedPauseRequest(
+                            $seconds,
+                            $requestTime,
+                            $report,
+                        ),
+                        ttl: $seconds,
+                    );
+                }
             }
         }
 

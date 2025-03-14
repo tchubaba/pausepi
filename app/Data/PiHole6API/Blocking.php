@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\PiHole6API;
 
 use App\Enums\V6BlockingStatus;

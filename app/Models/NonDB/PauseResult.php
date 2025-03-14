@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace App\Models\NonDB;
 
 use App\Enums\PauseResultStatus;
+use App\Models\PiHoleBox;
 use Carbon\Carbon;
 
 readonly class PauseResult

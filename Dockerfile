@@ -42,6 +42,23 @@ COPY . /var/www
 # Copy existing application directory permissions
 COPY --chown=www:www . /var/www
 
+# Ensure .env exists before running composer install
+RUN if [ ! -f /var/www/.env ]; then \
+        cp /var/www/.env.example /var/www/.env; \
+        ENV_CREATED=1; \
+    fi && \
+
+# Install PHP dependencies without dev packages
+    composer install --no-dev --optimize-autoloader --no-interaction && \
+
+# Generate app key if .env was copied
+    if [ "$ENV_CREATED" = "1" ]; then \
+        php /var/www/artisan key:generate; \
+    fi && \
+
+# Run database migrations
+    php /var/www/artisan migrate --force
+
 # Change current user to www
 USER www
 

@@ -45,7 +45,7 @@ COPY . /var/www
 RUN chown -R www:www /var/www
 
 # Run composer install as www user
-RUN su www -c "composer install --no-dev --optimize-autoloader --no-interaction --verbose"
+RUN su www -c "composer install --no-dev --optimize-autoloader --no-interaction"
 
 # Ensure .env exists and run artisan key:generate only if .env.example was copied
 RUN ENV_CREATED=0 && \
@@ -58,7 +58,7 @@ RUN ENV_CREATED=0 && \
     fi
 
 # Run database migrations
-RUN php /var/www/artisan migrate --force
+RUN su www -c "php /var/www/artisan migrate --force"
 
 # Change current user to www
 USER www

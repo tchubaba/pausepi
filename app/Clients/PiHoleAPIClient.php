@@ -81,15 +81,13 @@ class PiHoleAPIClient
                         RequestOptions::HTTP_ERRORS     => true,
                         RequestOptions::ALLOW_REDIRECTS => false,
                     ])->then(
-                        function (ResponseInterface $response) use ($box): PiHoleAPIClientPromiseResult {
-                            return new PiHoleAPIClientPromiseResult(
-                                state: PiHoleAPIClientPromiseResultState::FULFILLED,
-                                status: $response->getStatusCode(),
-                                box: $box,
-                                data: Blocking::from($response->getBody()->getContents()),
-                                response: $response,
-                            );
-                        },
+                        fn (ResponseInterface $response) => new PiHoleAPIClientPromiseResult(
+                            state: PiHoleAPIClientPromiseResultState::FULFILLED,
+                            status: $response->getStatusCode(),
+                            box: $box,
+                            data: Blocking::from($response->getBody()->getContents()),
+                            response: $response,
+                        ),
                         function (RequestException $exception) use ($box): PiHoleAPIClientPromiseResult {
                             if ($exception->getCode() === Response::HTTP_UNAUTHORIZED) {
                                 // Clear SID from cache if we get 401 response. Otherwise, this could
@@ -116,23 +114,19 @@ class PiHoleAPIClient
                 $pausePromises[] = $this->client->getAsync($box->getPauseUrl($seconds), [
                     RequestOptions::HTTP_ERRORS => true,
                 ])->then(
-                    function (ResponseInterface $response) use ($box): PiHoleAPIClientPromiseResult {
-                        return new PiHoleAPIClientPromiseResult(
-                            state: PiHoleAPIClientPromiseResultState::FULFILLED,
-                            status: $response->getStatusCode(),
-                            box: $box,
-                            data: Disable::from($response->getBody()->getContents()),
-                            response: $response,
-                        );
-                    },
-                    function (RequestException $exception) use ($box): PiHoleAPIClientPromiseResult {
-                        return new PiHoleAPIClientPromiseResult(
-                            state: PiHoleAPIClientPromiseResultState::REJECTED,
-                            status: $exception->getCode(),
-                            box: $box,
-                            exception: $exception,
-                        );
-                    }
+                    fn (ResponseInterface $response) => new PiHoleAPIClientPromiseResult(
+                        state: PiHoleAPIClientPromiseResultState::FULFILLED,
+                        status: $response->getStatusCode(),
+                        box: $box,
+                        data: Disable::from($response->getBody()->getContents()),
+                        response: $response,
+                    ),
+                    fn (RequestException $exception) => new PiHoleAPIClientPromiseResult(
+                        state: PiHoleAPIClientPromiseResultState::REJECTED,
+                        status: $exception->getCode(),
+                        box: $box,
+                        exception: $exception,
+                    )
                 );
             }
         }

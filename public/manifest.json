@@ -1,0 +1,23 @@
+{
+  "name": "PausePi",
+  "short_name": "PausePi",
+  "description": "Temporarily pause Pi-hole ad blocking across multiple Pi-holes",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/images/pausepi.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/pausepi.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

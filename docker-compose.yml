@@ -3,36 +3,19 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        image: php:8.3-fpm
-        container_name: pausepi-php
+        container_name: pausepi
         restart: unless-stopped
-        tty: true
-        environment:
-            SERVICE_NAME: app
-            SERVICE_TAGS: dev
-        working_dir: /var/www
-        volumes:
-            - app-volume:/var/www
-            - ./docker/php/conf.d/:/usr/local/etc/php/conf.d/
-        networks:
-            - app-network
-
-    webserver:
-        image: nginx:alpine
-        container_name: pausepi-nginx
-        restart: unless-stopped
-        tty: true
         ports:
-            - "80:80"
+            - "${APP_PORT:-8000}:8000"
         volumes:
-            - app-volume:/var/www
-            - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+            - .:/var/www
+            - ./docker/php/conf.d/local.ini:/usr/local/etc/php/conf.d/zzz-local.ini
+        env_file:
+            - path: .env
+              required: false
         networks:
             - app-network
 
 networks:
     app-network:
         driver: bridge
-
-volumes:
-    app-volume:

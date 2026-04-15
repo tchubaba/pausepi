@@ -62,7 +62,7 @@ class PiHoleAPIClient
             Utils::settle($authPromises)->wait();
         }
 
-        $pausePromises  = [];
+        $pausePromises   = [];
         $authFailResults = [];
 
         foreach ($piHoleBoxes as $box) {

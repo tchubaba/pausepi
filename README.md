@@ -27,12 +27,22 @@ PausePi is a Laravel 11 application. To deploy it, you can either use the provid
 container or install it natively.
 
 ### Docker Container
-To deploy it as a Docker container (this assumes Docker is already installed):
+To deploy it as a Docker container (this assumes Docker and `make` are already installed):
 * Clone this repository to a directory of your choice.
-* CD into this directory and run the following command:
+* CD into the directory and build the image:
 ```shell
-docker compose up -d --build
+make build
 ```
+* Start the container:
+```shell
+make up
+```
+The app will be available at **http://localhost:8000**. On first start the container automatically installs dependencies, generates an app key, and runs database migrations.
+
+To use a different port, add `APP_PORT=<port>` to your `.env` file.
+
+#### Development mode
+Set `APP_ENV=local` in your `.env` file. In dev mode the container installs all Composer dependencies (including dev tools like GrumPHP and php-cs-fixer). Run `npm run dev` separately on your host for Vite hot-module replacement.
 
 ### Native install
 
@@ -54,7 +64,7 @@ To enable communication between the application and your Pi-holes, you will need
 
 If running the docker container
 ```shell
-docker exec -it pausepi-php php /var/www/artisan pausepi:manager
+make manager
 ```
 
 If running natively

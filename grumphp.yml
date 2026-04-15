@@ -1,4 +1,5 @@
 grumphp:
+  hooks_dir: .githooks
   tasks: {
     phpcsfixer: {
       config: '.php-cs-fixer.php',

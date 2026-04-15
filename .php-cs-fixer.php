@@ -6,6 +6,8 @@ use PhpCsFixer\Finder;
 
 $finder = (new Finder())
     ->in(__DIR__)
+    ->exclude(['vendor', 'node_modules', 'bootstrap/cache', 'storage'])
+    ->notName(['_ide_helper.php', '_ide_helper_redis.php', '.phpstorm.meta.php'])
 ;
 
 return (new Config())

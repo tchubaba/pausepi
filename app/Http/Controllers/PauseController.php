@@ -47,14 +47,16 @@ class PauseController extends BaseController
         $cacheData = Cache::get(CachedPauseRequest::CACHE_KEY);
 
         if ($cacheData !== null) {
-            $seconds   = $cacheData->seconds - (int) ($cacheData->date->diffInSeconds(Carbon::now()));
-            $report    = $cacheData->report;
-            $allFailed = false;
+            $seconds      = $cacheData->seconds - (int) ($cacheData->date->diffInSeconds(Carbon::now()));
+            $totalSeconds = $cacheData->totalSeconds;
+            $report       = $cacheData->report;
+            $allFailed    = false;
         } else {
-            $seconds     = $seconds >= $this->minSec && $seconds <= $this->maxSec ? $seconds : $this->minSec;
-            $report      = collect();
-            $piholeBoxes = $piHoleBoxRepository->getPiHoleBoxes();
-            $allFailed   = true;
+            $seconds      = $seconds >= $this->minSec && $seconds <= $this->maxSec ? $seconds : $this->minSec;
+            $totalSeconds = $seconds;
+            $report       = collect();
+            $piholeBoxes  = $piHoleBoxRepository->getPiHoleBoxes();
+            $allFailed    = true;
 
             if ($piholeBoxes->isNotEmpty()) {
                 $requestTime = Carbon::now();
@@ -89,11 +91,12 @@ class PauseController extends BaseController
                             }
                         }
                     } else {
-                        // Handle rejected calls
+                        // Handle rejected calls (data may be null when auth failed before
+                        // a pause request was ever sent)
                         if ($promiseResult->box->isVersion6()) {
-                            /** @var BlockingError $blockingError */
+                            /** @var BlockingError|null $blockingError */
                             $blockingError = $promiseResult->data;
-                            $errorReason   = $blockingError->error->message;
+                            $errorReason   = $blockingError?->error?->message ?? 'Authentication failed';
                         } else {
                             $errorReason = sprintf(
                                 'Received HTTP code %s from API',
@@ -122,6 +125,7 @@ class PauseController extends BaseController
                             $seconds,
                             $requestTime,
                             $report,
+                            $totalSeconds,
                         ),
                         ttl: $seconds,
                     );
@@ -130,9 +134,10 @@ class PauseController extends BaseController
         }
 
         return view('home', [
-            'seconds'   => $seconds,
-            'report'    => $report,
-            'allFailed' => $allFailed,
+            'seconds'      => $seconds,
+            'totalSeconds' => $totalSeconds,
+            'report'       => $report,
+            'allFailed'    => $allFailed,
         ]);
     }
 }

@@ -20,13 +20,17 @@ readonly class CachedPauseRequest
      */
     public Collection $report;
 
+    public int $totalSeconds;
+
     public function __construct(
         int $seconds,
         Carbon $date,
-        Collection $report
+        Collection $report,
+        int $totalSeconds = 0,
     ) {
-        $this->seconds = $seconds;
-        $this->date    = $date;
-        $this->report  = $report;
+        $this->seconds      = $seconds;
+        $this->date         = $date;
+        $this->report       = $report;
+        $this->totalSeconds = $totalSeconds;
     }
 }

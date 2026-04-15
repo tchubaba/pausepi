@@ -4,20 +4,17 @@
 <head>
     {{-- Metadata --}}
     <meta charset="utf-8"/>
-    <meta name="description" content="PausePi">
+    <meta name="description" content="PausePi – pause Pi-hole ad blocking from one page">
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     {{-- Title --}}
     <title>{{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="font-sans text-white bg-black">
-<div id="app" class="container mx-auto">
+<body class="font-sans antialiased text-white">
+<div id="app">
     @yield('content')
 </div>
-<script type="module">
-    @yield('javascript')
-</script>
+@stack('scripts')
 </body>
 </html>

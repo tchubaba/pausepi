@@ -62,7 +62,9 @@ class PiHoleAPIClient
             Utils::settle($authPromises)->wait();
         }
 
-        $pausePromises = [];
+        $pausePromises  = [];
+        $authFailResults = [];
+
         foreach ($piHoleBoxes as $box) {
             if ($box->requiresAuthentication()) {
                 $sid = $this->getSID($box);
@@ -109,6 +111,14 @@ class PiHoleAPIClient
                         'Skipping pause request for Pi-hole %s due to missing SID',
                         $box->name,
                     ));
+                    $authFailResults[] = [
+                        'state' => 'fulfilled',
+                        'value' => new PiHoleAPIClientPromiseResult(
+                            state:  PiHoleAPIClientPromiseResultState::REJECTED,
+                            status: 0,
+                            box:    $box,
+                        ),
+                    ];
                 }
             } else {
                 $pausePromises[] = $this->client->getAsync($box->getPauseUrl($seconds), [
@@ -131,7 +141,9 @@ class PiHoleAPIClient
             }
         }
 
-        return ! empty($pausePromises) ? Utils::settle($pausePromises)->wait() : [];
+        $settled = ! empty($pausePromises) ? Utils::settle($pausePromises)->wait() : [];
+
+        return array_merge($settled, $authFailResults);
     }
 
     protected function clearSID(PiHoleBox $piHoleBox): void

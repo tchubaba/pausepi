@@ -76,6 +76,12 @@ This tool allows you to view configured Pi-holes, as well as add, edit, or remov
 
 ## Usage
 
+<p align="center">
+  <picture>
+    <img src="https://raw.githubusercontent.com/tchubaba/pausepi/master/public/images/pausepi_screenshot.png" width="497" height="761" alt="PausePi Screenshot">
+  </picture>
+</p>
+
 Once installed and configured, pause ad blocking by visiting your web server's URL in your browser. PausePi will attempt to pause all configured Pi-holes simultaneously. From there, you will also:
 
 * View the current status of pausing, including which Pi-holes were successfully paused

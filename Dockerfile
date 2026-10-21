@@ -1,5 +1,5 @@
 # Pinned by digest: php 8.5.12-cli, first 8.5 release fixing CVE-2026-109618 / CVE-2026-109619 (php2shell RCE)
-FROM php:8.5.12-cli@sha256:ce5d49625b9c50020dc1ce3c9cf4cdfa31cba31b6651e72daa3e6f5a010d234a
+FROM php:8.6.0alpha3-cli@sha256:4360af9e4889027210119990e2ba57c6b5140df14b1bdcce59fd908afc9f54bb
 
 WORKDIR /var/www
 

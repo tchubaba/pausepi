@@ -6,6 +6,12 @@ updates:
       directory: "/"
       schedule:
           interval: "weekly"
+      ignore:
+          # Dependabot's docker resolver proposes the newest tag with no semver
+          # range to filter against, so pre-release tags (e.g. 8.6.0RC2-cli)
+          # must be excluded explicitly.
+          - dependency-name: "php"
+            versions: ["*RC*", "*rc*", "*Beta*", "*beta*", "*Alpha*", "*alpha*", "*Snapshot*", "*snapshot*", "*Dev*", "*dev*"]
 
     - package-ecosystem: "npm"
       directory: "/"

@@ -7,11 +7,12 @@ updates:
       schedule:
           interval: "weekly"
       ignore:
-          # Dependabot's docker resolver proposes the newest tag with no semver
-          # range to filter against, so pre-release tags (e.g. 8.6.0RC2-cli)
-          # must be excluded explicitly.
+          # Dependabot parses docker ignore versions as Gem (Bundler)
+          # requirements matched against the lowercased tag, so this range
+          # covers 8.6.0 beta/RC/snapshot tags (e.g. 8.6.0RC2-cli) while
+          # still allowing 8.5.x security patches and 8.6.0 stable through.
           - dependency-name: "php"
-            versions: ["*RC*", "*rc*", "*Beta*", "*beta*", "*Alpha*", "*alpha*", "*Snapshot*", "*snapshot*", "*Dev*", "*dev*"]
+            versions: [">= 8.6.0beta, < 8.6.0"]
 
     - package-ecosystem: "npm"
       directory: "/"

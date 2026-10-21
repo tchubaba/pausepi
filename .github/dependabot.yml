@@ -1,0 +1,18 @@
+version: 2
+updates:
+    # Keeps the digest-pinned PHP base image current (tag prefix 8.5.12-cli is
+    # kept in sync; Dependabot bumps the sha256 digest when PHP publishes a new build)
+    - package-ecosystem: "docker"
+      directory: "/"
+      schedule:
+          interval: "weekly"
+
+    - package-ecosystem: "npm"
+      directory: "/"
+      schedule:
+          interval: "weekly"
+
+    - package-ecosystem: "composer"
+      directory: "/"
+      schedule:
+          interval: "weekly"

@@ -23,7 +23,7 @@ To address these issues, we introduce PausePi, a tool that allows you to tempora
 
 ## Installation
 
-PausePi is a Laravel 11 application. To deploy it, you can either use the provided docker 
+PausePi is a Laravel 13 application. To deploy it, you can either use the provided docker 
 container or install it natively.
 
 ### Docker Container
@@ -47,7 +47,7 @@ Set `APP_ENV=local` in your `.env` file. In dev mode the container installs all 
 ### Native install
 
 * Clone this repository to a directory of your choice.
-* Set up a PHP 8.3+ environment with the required extensions and server configuration (see [Laravel's documentation](https://laravel.com/docs/11.x/deployment#server-requirements)).
+* Set up a PHP 8.5+ environment with the required extensions and server configuration (see [Laravel's documentation](https://laravel.com/docs/13.x/deployment#server-requirements)).
 * Install the PHP `sqlite3` and `http` extensions.
 * Install Composer (look [here](https://getcomposer.org/download/))
 * CD into the directory and run the following commands:

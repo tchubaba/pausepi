@@ -5,7 +5,7 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.3",
+        "php": "^8.5",
         "ext-http": "*",
         "laravel/framework": "^13.10.0",
         "laravel/prompts": "^0.3.23",
@@ -71,7 +71,7 @@
             "phpro/grumphp-shim": true
         },
         "platform": {
-            "php": "8.3"
+            "php": "8.5.12"
         }
     },
     "minimum-stability": "stable",

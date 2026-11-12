@@ -6,7 +6,7 @@
         "build": "vite build"
     },
     "devDependencies": {
-        "@tailwindcss/vite": "^4.0",
+        "@tailwindcss/vite": "^4.3",
         "axios": "^1.20.0",
         "laravel-vite-plugin": "^3.2.1",
         "tailwindcss": "^4.3",

@@ -15,6 +15,6 @@
     "dependencies": {
         "form-data": "^4.0.6",
         "nanoid": "^6.0.1",
-        "postcss": "^8.5.26"
+        "postcss": "^8.5.32"
     }
 }
